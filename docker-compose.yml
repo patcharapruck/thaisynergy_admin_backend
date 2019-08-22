@@ -1,0 +1,8 @@
+version: '3'
+services:
+  thaisynergy_backend_node:
+    build: ./
+    container_name: thaisynergy_backend_node
+    restart: always
+    ports:
+        - "8090:3000"
