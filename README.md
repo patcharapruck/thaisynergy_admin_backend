@@ -16,15 +16,7 @@ git clone https://gitlab.co.th/folder_name.git
 cd nodejs
 ```
 
-**3. เริ่มต้นใช้งานสำหรับ development**
-
-```sh
-docker-compose -f "docker-compose-dev.yml" up -d
-```
-> หากต้องการ build image ของ docker ใหม่อีกครั้ง สามารถทำได้โดยการเพิ่ม option --build
-
-
-**4. เริ่มต้นใช้งานสำหรับ production**
+**3. เริ่มต้นใช้งานสำหรับ production**
 
 ```sh
 docker-compose up -d
