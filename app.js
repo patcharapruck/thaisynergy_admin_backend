@@ -93,6 +93,40 @@ app.get('/get_member_status', (req,res)=>{
   }); 
 }); 
 
+//สัญชาติ
+app.get('/get_nationality', (req,res)=>{ 
+  db.query('SELECT * FROM `NATIONALITY`', function (error, results, fields) { 
+    console.log(results);
+    
+    res.json({results}); 
+  }); 
+}); 
+
+//เชื้อชาติ
+app.get('/get_ethnicity', (req,res)=>{ 
+  db.query('SELECT * FROM `ETHNICITY`', function (error, results, fields) { 
+    console.log(results);
+    
+    res.json({results}); 
+  }); 
+}); 
+//ศาสนา
+app.get('/get_religiion', (req,res)=>{ 
+  db.query('SELECT * FROM `RELIGION`', function (error, results, fields) { 
+    console.log(results);
+    
+    res.json({results}); 
+  }); 
+}); 
+
+app.get('/get_member', (req,res)=>{ 
+  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER, MEMBER.MEMBER_BIRTH_DATE FROM MEMBER', function (error, results, fields) { 
+    console.log(results);
+    
+    res.json({results}); 
+  }); 
+}); 
+
 
 /////////// insert member ///////////////
  app.post('/insert_member',async (req,res)=>{ 
