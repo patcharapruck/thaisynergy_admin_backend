@@ -78,7 +78,7 @@ app.post('/get_district', (req,res)=>{
 
 app.post('/get_subdistrict', (req,res)=>{ 
   let id_district = req.body.id;
-  db.query('SELECT * FROM `SUBDISTRICT` WHERE `SUBDISTRICT`.`DISTRICT_ID`` ='+id_district, function (error, results, fields) { 
+  db.query('SELECT * FROM `SUBDISTRICT` WHERE `SUBDISTRICT`.`DISTRICT_ID` ='+id_district, function (error, results, fields) { 
     console.log(results);
     
     res.json({results}); 
@@ -94,7 +94,7 @@ app.get('/get_member_status', (req,res)=>{
 }); 
 
 
-
+/////////// insert member ///////////////
  app.post('/insert_member',async (req,res)=>{ 
 
   // console.log(req.body);
