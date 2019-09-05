@@ -157,7 +157,14 @@ app.get('/get_member', (req,res)=>{
                                                                   
       let per_addr = 0; 
       db.query("INSERT INTO ADDRESS SET ?",temp_per_addr,async function (error, results, fields) { 
-        console.log("Insert permanent address"); 
+        if (error) { 
+          console.log(error); 
+
+          res.json({"status":"404","massage":'Cannot Insert permanent address'}); 
+      } 
+      else {  
+        console.log("Insert permanent address");
+      }
           }); 
 
  
@@ -185,11 +192,19 @@ app.get('/get_member', (req,res)=>{
       "SUBDISTRICT_ID":current_subdistrict_id,  
       "ADDRESS_STATUS_ID":current_address_status_id};  
                                                                   
-      var temp =0;
+      // var temp =0;
       db.query("INSERT INTO ADDRESS SET ?",temp_cur_addr, function (error, results, fields) { 
+        
+        if (error) { 
+          console.log(error); 
+
+          res.json({"status":"404","massage":'Cannot Insert current address'}); 
+      } 
+      else {  
         console.log("Insert current address");
+      } 
           }); 
-      console.log(temp);
+      // console.log(temp);
 
 
 
@@ -234,12 +249,16 @@ app.get('/get_member', (req,res)=>{
 
             db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('"+idcard+"', '"+firstname+"', '"+lastname+"', '"+image+"', '"+birthday+"', '"+issueby+"', '"+issuedate+"', '"+expiry+"', '"+phonenumber+"', '"+mobilephonenumber+"', '"+faxnumber+"', '"+email+"', '"+line+"', '"+facebook+"', '"+weight+"', '"+height+"', '"+waistline+"', '"+bmi+"', '"+systolic_blood+"', '"+diastolic_blood+"', '"+fasting_sugar+"', '"+disabled_card+"', '"+title_id+"', '"+province+"', LAST_INSERT_ID()-1, LAST_INSERT_ID(), '"+nationality+"', '"+ethnicity+"', '"+religion+"', '"+status_id+"')", function (error, results, fields) { 
 
-            if (error) { 
+              if (error) { 
                 console.log(error); 
+      
+                res.json({"status":"404","massage":'Cannot Insert Member'}); 
             } 
             else {  
-                console.log("Insert Member Success");
+              console.log("Insert Member Success");
             } 
+
+            
           }); 
 
 
@@ -267,7 +286,16 @@ app.get('/get_member', (req,res)=>{
       "ADDRESS_STATUS_ID":1}
 
       db.query("INSERT INTO ADDRESS SET ?",temp_addr_contact, function (error, results, fields) { 
+        
+
+        if (error) { 
+          console.log(error); 
+
+          res.json({"status":"404","massage":'Cannot Insert contact address'}); 
+      } 
+      else {  
         console.log("Insert contact address");
+      } 
       });
 
     const informationContact = fetchData_contact.informationContact; 
@@ -292,12 +320,230 @@ app.get('/get_member', (req,res)=>{
        
         if (error) { 
           console.log(error); 
-          res.json({"status":"404","massage":'Cannot Insert'}); 
+
+          res.json({"status":"404","massage":'Cannot ICE_CONTACT'}); 
       } 
       else {  
           console.log("Insert ICE_CONTACT Success");
 
-          res.json({"status":"200"}); 
+          // res.json({"status":"200"}); 
       } 
       });
+
+      db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) { 
+       
+        if (error) { 
+          console.log(error); 
+          res.json({"status":"404","massage":'Cannot Insert'}); 
+      } 
+      else {  
+          console.log("Insert ICE_CONTACT Success");
+          let data=results[0];
+          res.json({"results":{"status":"200",data}}); 
+      } 
+      });
+
+
+
 }); 
+
+
+app.post('/insert_equipment', (req,res)=>{ 
+  console.log(req.body);
+  let fetchdata_equipment = req.body.equipment;
+  let equipment_walker = fetchdata_equipment.equipment_walker;
+  let equipment_prostheses = fetchdata_equipment.equipment_prostheses;
+  let equipment_standard_tricycle = fetchdata_equipment.equipment_standard_tricycle;
+  let equipment_white_cane = fetchdata_equipment.equipment_white_cane;
+  let equipment_slate = fetchdata_equipment.equipment_slate;
+  let equipment_stylus = fetchdata_equipment.equipment_stylus;
+  let equipment_hearing_aids = fetchdata_equipment.equipment_hearing_aids;
+  let equipment_other = fetchdata_equipment.equipment_other;
+  let member_id = fetchdata_equipment.member_id;
+  
+    // res.json({"status":"200"}); 
+  
+  db.query("INSERT INTO `EQUIPMENT`(`EQUIPMENT_WALKER`, `EQUIPMENT_PROSTHESES`, `EQUIPMENT_STANDARD_TRICYCLE`, `EQUIPMENT_WHITE_CANE`, `EQUIPMENT_SLATE`, `EQUIPMENT_STYLUS`, `EQUIPMENT_HEARING_AIDS`, `EQUIPMENT_OTHER`, `MEMBER_ID`) "+
+  " VALUES ('"+equipment_walker+"',"+
+  "'"+equipment_prostheses+"',"+
+  "'"+equipment_standard_tricycle+"',"+
+  "'"+equipment_white_cane+"',"+
+  "'"+equipment_slate+"',"+
+  "'"+equipment_stylus+"',"+
+  "'"+equipment_hearing_aids+"',"+
+  "'"+equipment_other+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    // console.log(results);
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      res.json({"status":"200"}); 
+    }
+  }); 
+
+});
+
+
+app.post('/insert_medical_care', (req,res)=>{ 
+  
+  console.log(req.body);
+  let fetchdata_medical_care = req.body.medical_care;
+  let medical_care_nhso_disabled = fetchdata_medical_care.medical_care_nhso_disabled;
+  let medical_care_nhso_uc = fetchdata_medical_care.medical_care_nhso_uc;
+  let medical_care_pension = fetchdata_medical_care.medical_care_pension;
+  let medical_care_veteran = fetchdata_medical_care.medical_care_veteran;
+  let medical_care_social_security = fetchdata_medical_care.medical_care_social_security;
+  let medical_care_life_insurance = fetchdata_medical_care.medical_care_life_insurance;
+  let medical_care_self = fetchdata_medical_care.medical_care_self;
+  let medical_other = fetchdata_medical_care.medical_other;
+  let member_id = fetchdata_medical_care.member_id;
+  
+    // res.json({"status":"200"}); 
+  
+  db.query("INSERT INTO `MEDICAL_CARE`(`MEDICAL_CARE_NHSO_DISABLED`, `MEDICAL_CARE_NHSO_UC`, `MEDICAL_CARE_PENSION`, `MEDICAL_CARE_VETERAN`, `MEDICAL_CARE_SOCIAL_SECURITY`, `MEDICAL_CARE_LIFE_INSURANCE`, `MEDICAL_CARE_SELF`, `MEDICAL_OTHER`, `MEMBER_ID`) "+
+  " VALUES ('"+medical_care_nhso_disabled+"',"+
+  "'"+medical_care_nhso_uc+"',"+
+  "'"+medical_care_pension+"',"+
+  "'"+medical_care_veteran+"',"+
+  "'"+medical_care_social_security+"',"+
+  "'"+medical_care_life_insurance+"',"+
+  "'"+medical_care_self+"',"+
+  "'"+medical_other+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      res.json({"status":"200"}); 
+    }
+  }); 
+
+
+});
+
+
+/////////////////// insert_rights_information /////////////////////////
+app.post('/insert_rights_information', (req,res)=>{ 
+
+  ////////////////fetchdata_member_id//////////////////
+  // let fetchdata_member_id = req.body.member_id;
+  let member_id = req.body.member_id;
+
+  ////////////////equipment//////////////////
+  let fetchdata_equipment = req.body.equipment;
+  let equipment_walker = fetchdata_equipment.equipment_walker;
+  let equipment_prostheses = fetchdata_equipment.equipment_prostheses;
+  let equipment_standard_tricycle = fetchdata_equipment.equipment_standard_tricycle;
+  let equipment_white_cane = fetchdata_equipment.equipment_white_cane;
+  let equipment_slate = fetchdata_equipment.equipment_slate;
+  let equipment_stylus = fetchdata_equipment.equipment_stylus;
+  let equipment_hearing_aids = fetchdata_equipment.equipment_hearing_aids;
+  let equipment_other = fetchdata_equipment.equipment_other;
+ 
+  
+  db.query("INSERT INTO `EQUIPMENT`(`EQUIPMENT_WALKER`, `EQUIPMENT_PROSTHESES`, `EQUIPMENT_STANDARD_TRICYCLE`, `EQUIPMENT_WHITE_CANE`, `EQUIPMENT_SLATE`, `EQUIPMENT_STYLUS`, `EQUIPMENT_HEARING_AIDS`, `EQUIPMENT_OTHER`, `MEMBER_ID`) "+
+  " VALUES ('"+equipment_walker+"',"+
+  "'"+equipment_prostheses+"',"+
+  "'"+equipment_standard_tricycle+"',"+
+  "'"+equipment_white_cane+"',"+
+  "'"+equipment_slate+"',"+
+  "'"+equipment_stylus+"',"+
+  "'"+equipment_hearing_aids+"',"+
+  "'"+equipment_other+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      console.log("EQUIPMENT");
+      // res.json({"status":"200"}); 
+    }
+  }); 
+  
+  ////////////////medical_care//////////////////
+  
+  let fetchdata_medical_care = req.body.medical_care;
+  let medical_care_nhso_disabled = fetchdata_medical_care.medical_care_nhso_disabled;
+  let medical_care_nhso_uc = fetchdata_medical_care.medical_care_nhso_uc;
+  let medical_care_pension = fetchdata_medical_care.medical_care_pension;
+  let medical_care_veteran = fetchdata_medical_care.medical_care_veteran;
+  let medical_care_social_security = fetchdata_medical_care.medical_care_social_security;
+  let medical_care_life_insurance = fetchdata_medical_care.medical_care_life_insurance;
+  let medical_care_self = fetchdata_medical_care.medical_care_self;
+  let medical_other = fetchdata_medical_care.medical_other;
+
+  db.query("INSERT INTO `MEDICAL_CARE`(`MEDICAL_CARE_NHSO_DISABLED`, `MEDICAL_CARE_NHSO_UC`, `MEDICAL_CARE_PENSION`, `MEDICAL_CARE_VETERAN`, `MEDICAL_CARE_SOCIAL_SECURITY`, `MEDICAL_CARE_LIFE_INSURANCE`, `MEDICAL_CARE_SELF`, `MEDICAL_OTHER`, `MEMBER_ID`) "+
+  " VALUES ('"+medical_care_nhso_disabled+"',"+
+  "'"+medical_care_nhso_uc+"',"+
+  "'"+medical_care_pension+"',"+
+  "'"+medical_care_veteran+"',"+
+  "'"+medical_care_social_security+"',"+
+  "'"+medical_care_life_insurance+"',"+
+  "'"+medical_care_self+"',"+
+  "'"+medical_other+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      console.log("MEDICAL_CARE");
+      // res.json({"status":"200"}); 
+    }
+  }); 
+
+  //////////////CARETAKER/////////////////
+
+
+  let fetchdata_caretaker_requirement = req.body.caretaker;
+  let caretaker_requirement = fetchdata_caretaker_requirement.caretaker_requirement;
+  
+  db.query("INSERT INTO `CARETAKER`( `CARETAKER_REQUIREMENT`, `MEMBER_ID`)"+
+  " VALUES ('"+caretaker_requirement+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      console.log("CARETAKER");
+      
+      res.json({"status":"200"}); 
+    }
+  }); 
+
+});
+
+/////////////////// insert_residence /////////////////////////
+app.post('/insert_residence', (req,res)=>{ 
+  console.log(req.body);
+  let fetchdata_residence = req.body.residence;
+  let residence_alone = fetchdata_residence.residence_alone;
+  let residence_spouse = fetchdata_residence.residence_spouse;
+  let residence_parents = fetchdata_residence.residence_parents;
+  let residence_child = fetchdata_residence.residence_child;
+  let residence_relatives = fetchdata_residence.residence_relatives;
+  let residence_non_relatives = fetchdata_residence.residence_non_relatives;
+  let residence_employer = fetchdata_residence.residence_employer;
+  let residence_other = fetchdata_residence.residence_other;
+  let member_id = fetchdata_residence.member_id;
+  
+    // res.json({"status":"200"}); 
+  
+  db.query("INSERT INTO `RESIDENCE`(`RESIDENCE_ALONE`, `RESIDENCE_SPOUSE`, `RESIDENCE_PARENTS`, `RESIDENCE_CHILD`, `RESIDENCE_RELATIVES`, `RESIDENCE_NON_RELATIVES`, `RESIDENCE_EMPLOYER`, `RESIDENCE_OTHER`, `MEMBER_ID`) "+
+  " VALUES ('"+residence_alone+"',"+
+  "'"+residence_spouse+"',"+
+  "'"+residence_parents+"',"+
+  "'"+residence_child+"',"+
+  "'"+residence_relatives+"',"+
+  "'"+residence_non_relatives+"',"+
+  "'"+residence_employer+"',"+
+  "'"+residence_other+"',"+
+  "'"+member_id+"')", function (error, results, fields) { 
+    if (error) {
+      res.json({"status":"404"}); 
+    }
+    else{
+      res.json({"status":"200"}); 
+    }
+  }); 
+});
