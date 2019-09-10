@@ -130,6 +130,30 @@ app.get('/get_member', (req, res) => {
   });
 });
 
+app.post('/get_member_byid', (req, res) => {
+  console.log("adasdasdasd");
+  
+  let member_id = req.body.member_id;
+  let member_data = "";
+ 
+  db.query('SELECT * FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
+    //console.log(results);
+    member_data=results[0];
+    console.log(results[0].PERMANENT_ADDRESS_ID);
+    db.query('SELECT * FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = ?',results[0].PERMANENT_ADDRESS_ID, function (error, results, fields) {
+      console.log(results);
+      // member_data=results;
+      console.log(results[0]);
+      // res.json({ results });
+    });
+
+
+    // res.json({ results });
+  });
+  // console.log(member_data);
+  
+});
+
 
 /////////// insert member ///////////////
 app.post('/insert_member', async (req, res) => {
@@ -1120,7 +1144,7 @@ app.post('/insert_residence', (req, res) => {
 
 //////////////get_residence///////////////////
 app.get('/get_residence', (req, res) => {
-
+  let member_id = req.body.disability;
   db.query('SELECT * FROM `RESIDENCE`', function (error, results, fields) {
 
     if (error) {
@@ -1137,78 +1161,110 @@ app.get('/get_residence', (req, res) => {
 
 
 ///////////////// insert_disability ///////////////
-app.post('/insert_disability', (req, res) => {
-  let fetch_data_has_disability = req.body.disability;
+// app.post('/insert_disability', (req, res) => {
+//   let fetch_data_has_disability = req.body.disability;
 
-  for (let index = 0; index < fetch_data_has_disability.length; index++) {
-    let temp_has_disability = {
-      "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
-      "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
-      "MEMBER_ID": fetch_data_has_disability[index].member_id,
-      "DISABILITY_ID": fetch_data_has_disability[index].disability_id
-    };
-    console.log(fetch_data_has_disability[index].member_id);
-    db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ? ', temp_has_disability, function (error, results, fields) {
-      if (error) {
-        console.log(error);
+//   for (let index = 0; index < fetch_data_has_disability.length; index++) {
+//     if (fetch_data_has_disability[index].checked==1) {
+//       let temp_has_disability = {
+//       "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
+//       "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
+//       "MEMBER_ID": fetch_data_has_disability[index].member_id,
+//       "DISABILITY_ID": fetch_data_has_disability[index].disability_id
+//     };
+//     console.log(fetch_data_has_disability[index].member_id);
+//     db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ? ', temp_has_disability, function (error, results, fields) {
+//       if (error) {
+//         console.log(error);
 
-        res.json({ "results": { "status": "404" } });
-      }
-    });
+//         res.json({ "results": { "status": "404" } });
+//       }
+//     });
+      
+//     }
+//     // let temp_has_disability = {
+//     //   "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
+//     //   "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
+//     //   "MEMBER_ID": fetch_data_has_disability[index].member_id,
+//     //   "DISABILITY_ID": fetch_data_has_disability[index].disability_id
+//     // };
+//     // console.log(fetch_data_has_disability[index].member_id);
+//     // db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ? ', temp_has_disability, function (error, results, fields) {
+//     //   if (error) {
+//     //     console.log(error);
 
-  }
-  res.json({ "results": { "status": "200" } });
+//     //     res.json({ "results": { "status": "404" } });
+//     //   }
+//     // });
 
-});
+//   }
+//   res.json({ "results": { "status": "200" } });
+
+// });
 
 ////////////////// update_disability ////////////////////////////
-app.post('/update_disability', (req, res) => {
+app.post('/insert_disability', (req, res) => {
   let fetch_data_has_disability = req.body.disability;
-  let fetch_data_remove_disability = req.body.remove_disability;
+  let member_id = req.body.member_id;
 
+  
   for (let index = 0; index < fetch_data_has_disability.length; index++) {
-    let temp_has_disability = {
-      "MEMBER_HAS_DISABILITY_ID": fetch_data_has_disability[index].member_has_disability_id,
-      "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
-      "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
-      "MEMBER_ID": fetch_data_has_disability[index].member_id,
-      "DISABILITY_ID": fetch_data_has_disability[index].disability_id
-    };
-    let temp_has_disability_on_duplicate = {
-
-      "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
-      "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
-      "DISABILITY_ID": fetch_data_has_disability[index].disability_id
-    };
-    console.log(fetch_data_has_disability[index].member_id);
-    db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ?  ON DUPLICATE KEY UPDATE ?', [temp_has_disability, temp_has_disability_on_duplicate], function (error, results, fields) {
-      if (error) {
-        console.log(error);
-
-        res.json({ "results": { "status": "404" } });
-      }
-    });
-
+    if (fetch_data_has_disability[index].checked==1) {
+      let temp_has_disability = {
+        "MEMBER_HAS_DISABILITY_ID": fetch_data_has_disability[index].member_has_disability_id,
+        "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
+        "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
+        "MEMBER_ID": member_id,
+        "DISABILITY_ID": fetch_data_has_disability[index].disability_id
+      };
+      let temp_has_disability_on_duplicate = {
+  
+        "MEMBER_HAS_DISABILITY_LEVEL": fetch_data_has_disability[index].member_has_disability_level,
+        "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
+        "DISABILITY_ID": fetch_data_has_disability[index].disability_id
+      };
+      console.log(fetch_data_has_disability[index].member_has_disability_id);
+      db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ?  ON DUPLICATE KEY UPDATE ?', [temp_has_disability, temp_has_disability_on_duplicate], function (error, results, fields) {
+        if (error) {
+          console.log(error);
+  
+          res.json({ "results": { "status": "404" } });
+        }
+      });
+    }
+    else if(fetch_data_has_disability[index].checked==0){
+      db.query('DELETE a FROM MEMBER_HAS_DISABILITY a LEFT JOIN DISABILITY b ON b.DISABILITY_ID = a.DISABILITY_ID WHERE b.DISABILITY_TYPE_ID = ? AND a.MEMBER_ID = ?', [(index+1),member_id], function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          res.json({ "results": { "status": "404" } });
+        }
+      });
+    }
   }
   // console.log(fetch_data_remove_disability.length);
 
-  for (let index2 = 0; index2 < fetch_data_remove_disability.length; index2++) {
+  // for (let index2 = 0; index2 < fetch_data_remove_disability.length; index2++) {
 
-    // console.log(fetch_data_remove_disability[index2]);
-    db.query('DELETE FROM `MEMBER_HAS_DISABILITY` WHERE MEMBER_HAS_DISABILITY.MEMBER_HAS_DISABILITY_ID = ? ', fetch_data_remove_disability[index2], function (error, results, fields) {
+  //   // console.log(fetch_data_remove_disability[index2]);
+    db.query('SELECT DISABILITY.DISABILITY_TYPE_ID,MEMBER_HAS_DISABILITY.* FROM MEMBER_HAS_DISABILITY,DISABILITY WHERE MEMBER_HAS_DISABILITY.DISABILITY_ID = DISABILITY.DISABILITY_ID AND MEMBER_HAS_DISABILITY.MEMBER_ID = ? ', member_id, function (error, results, fields) {
       if (error) {
         res.json({ "results": { "status": "404" } });
       }
+      else{
+        // console.log(results);
+        
+        res.json({ "results": { "status": "200","data": results}});
+      }
     });
 
-  }
-  res.json({ "results": { "status": "200" } });
+  // }
+ 
 });
 
 //////////////get_disability///////////////////
 app.post('/get_disability', (req, res) => {
   let member_id = req.body.member_id;
-  db.query('SELECT MEMBER_HAS_DISABILITY.*,DISABILITY.DISABILITY_TYPE_ID FROM MEMBER_HAS_DISABILITY,DISABILITY WHERE MEMBER_HAS_DISABILITY.DISABILITY_ID = DISABILITY.DISABILITY_ID AND MEMBER_HAS_DISABILITY.MEMBER_ID = ? ', member_id, function (error, results, fields) {
+  db.query('SELECT DISABILITY.DISABILITY_TYPE_ID,MEMBER_HAS_DISABILITY.* FROM MEMBER_HAS_DISABILITY,DISABILITY WHERE MEMBER_HAS_DISABILITY.DISABILITY_ID = DISABILITY.DISABILITY_ID AND MEMBER_HAS_DISABILITY.MEMBER_ID = ? ', member_id, function (error, results, fields) {
 
     if (error) {
 
