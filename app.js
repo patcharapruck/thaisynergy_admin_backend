@@ -291,10 +291,40 @@ app.post('/insert_member', async (req, res) => {
         const firstname = personalData.fname;
         const lastname = personalData.lname;
         const image = personalData.image;
-        const birthday = personalData.birthDate;
+
+
+        const birthday_data = personalData.birthDate;
+        let birthday=null;
+        if (birthday_data!='') {
+          birthday="\'"+birthday_data+"\'";
+        }
+
+
+        // const issueby_data = personalData.issueBy;
+        // let issueby=null;
+        // if (issueby_data!=null) {
+        //   issueby="\'"+issueby_data+"\'";
+        // }
+
+        const issuedate_data = personalData.issueDate;
+
+        let issuedate=null;
+        if (issuedate_data!='') {
+          issuedate="\'"+issuedate_data+"\'";
+        }
+
+        const expiry_data = personalData.expiredDate;
+
+        let expiry=null;
+        if (issuedate_data!='') {
+          expiry="\'"+expiry_data+"\'";
+        }
+
+
+        // const birthday = personalData.birthDate;
         const issueby = personalData.issueBy;
-        const issuedate = personalData.issueDate;
-        const expiry = personalData.expiredDate;
+        // const issuedate = personalData.issueDate;
+        // const expiry = personalData.expiredDate;
         const title_id = personalData.prefix;
         const province = personalData.provinceOfBirth;
         const nationality = personalData.nationality;
@@ -364,7 +394,7 @@ app.post('/insert_member', async (req, res) => {
         let per_addr = 0;
         db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
           if (error) {
-            // console.log(error);
+            console.log(error);
             res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
 
           }
@@ -393,7 +423,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
 
           if (error) {
-            // console.log(error);
+            console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -408,11 +438,11 @@ app.post('/insert_member', async (req, res) => {
         
 
 
-        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES(" + idcard + ", '" + firstname + "', '" + lastname + "', " + image + ", " + birthday + ", " + issueby + ", " + issuedate + ", " + expiry + ", " + phonenumber + ", " + mobilephonenumber + ", " + faxnumber + ", " + email + ", " + line + ", " + facebook + ", " + weight + ", " + height + ", " + waistline + ", " + bmi + ", " + systolic_blood + ", " + diastolic_blood + ", " + fasting_sugar + ", " + disabled_card + ", " + title_id + ", " + province + ", LAST_INSERT_ID()-1, LAST_INSERT_ID(), " + nationality + ", " + ethnicity + ", " + religion + ", " + status_id + ")", function (error, results, fields) {
+        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', " + birthday + ", '" + issueby + "', " + issuedate + ", " + expiry + ", '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', " + weight + ", " + height + ", " + waistline + ", " + bmi + ", " + systolic_blood + ", " + diastolic_blood + ", " + fasting_sugar + ", " + disabled_card + ", " + title_id + ", " + province + ", LAST_INSERT_ID()-1, LAST_INSERT_ID(), " + nationality + ", " + ethnicity + ", " + religion + ", " + status_id + ")", function (error, results, fields) {
 
           if (error) {
        
-            // console.log(error);
+            console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -441,7 +471,7 @@ app.post('/insert_member', async (req, res) => {
 
 
           if (error) {
-            // console.log(error);
+            console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -453,13 +483,13 @@ app.post('/insert_member', async (req, res) => {
 
       /////////////////////informationContact/////////////////////////////
 
-        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', " + contact_mobile_phone_number + ", " + contact_fax_number + ", " + contact_email + ", " + contact_line_id + ", " + contact_facebook_id + ", " + contact_name_title_id + ", LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
 
 
-        db.query(sql_temp_contact, function (error, results, fields) {
+        db.query("INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ? , LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER))",[contact_first_name,contact_last_name,contact_phone_number,contact_mobile_phone_number,contact_fax_number,contact_email,contact_line_id,contact_facebook_id,contact_name_title_id], function (error, results, fields) {
 
           if (error) {
-            // console.log(error);
+            console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -473,7 +503,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
 
           if (error) {
-            // console.log(error);
+            console.log(error);
             res.json({ "results": { "status": "404" } });
           }
           else {
@@ -708,39 +738,35 @@ app.post('/delete_member', (req, res) => {
   const member_id = req.body.member_id;
   //console.log(member_id);
 
+  // db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM ICE_CONTACT WHERE ICE_CONTACT.MEMBER_ID =" + member_id + ")", function (error, results, fields) {
 
-  db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM ICE_CONTACT WHERE ICE_CONTACT.MEMBER_ID =" + member_id + ")", function (error, results, fields) {
+  //   if (error) {
+  //     console.log(error);
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("DELETE ICE_CONTACT ADDRESS");
+  //     // res.json({"status":"200"});
+  //   }
+  // });
 
-    if (error) {
-      //console.log(error);
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("DELETE ICE_CONTACT ADDRESS");
-      // res.json({"status":"200"});
-    }
-  });
+  // db.query("DELETE FROM ICE_CONTACT WHERE ICE_CONTACT.MEMBER_ID =" + member_id, function (error, results, fields) {
 
-  db.query("DELETE FROM ICE_CONTACT WHERE ICE_CONTACT.MEMBER_ID =" + member_id, function (error, results, fields) {
-
-    if (error) {
-      //console.log(error);
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("DELETE ICE_CONTACT");
-      // res.json({"status":"200"});
-    }
-  });
-
-
-
+  //   if (error) {
+  //     console.log(error);
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("DELETE ICE_CONTACT");
+  //     // res.json({"status":"200"});
+  //   }
+  // });
 
 
   db.query("DELETE FROM `EQUIPMENT` WHERE EQUIPMENT.MEMBER_ID =" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -752,7 +778,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `CARETAKER` WHERE CARETAKER.MEMBER_ID =" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -764,7 +790,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `MEDICAL_CARE` WHERE MEDICAL_CARE.MEMBER_ID=" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -776,7 +802,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM MEMBER_HAS_DISABILITY WHERE MEMBER_HAS_DISABILITY.MEMBER_ID = ? ", member_id, function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -788,7 +814,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM MEMBER_HAS_RESIDENCE WHERE MEMBER_HAS_RESIDENCE.MEMBER_ID= ? ", member_id, function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -802,7 +828,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = " + member_id + ")", function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -814,7 +840,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = " + member_id + ")", function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -826,7 +852,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `MEMBER` WHERE MEMBER.MEMBER_ID=" + member_id, function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -1179,10 +1205,33 @@ app.post('/update_member', (req, res) => {
   const firstname = personalData.fname;
   const lastname = personalData.lname;
   const image = personalData.img;
-  const birthday = personalData.birthDate;
+  const birthday_data = personalData.birthDate;
+  let birthday=null;
+  if (birthday_data!='') {
+    birthday=birthday_data;
+  }
+
+
   const issueby = personalData.issueBy;
-  const issuedate = personalData.issueDate;
-  const expiry = personalData.expiredDate;
+  // let issueby=null;
+  // if (issueby_data!=null) {
+  //   issueby="\'"+issueby_data+"\'";
+  // }
+
+  const issuedate_data = personalData.issueDate;
+
+  let issuedate=null;
+  if (issuedate_data!='') {
+    issuedate=issuedate_data;
+  }
+
+  const expiry_data = personalData.expiredDate;
+
+  let expiry=null;
+  if (issuedate_data!='') {
+    expiry=expiry_data;
+  }
+
   const title_id = personalData.prefix;
   const province = personalData.provinceOfBirth;
   const nationality = personalData.nationality;
@@ -1279,7 +1328,7 @@ app.post('/update_member', (req, res) => {
   db.query("UPDATE `MEMBER` SET ? WHERE MEMBER.MEMBER_ID = ?", [data, member_id], function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -1317,7 +1366,7 @@ app.post('/update_member', (req, res) => {
   let per_addr = 0;
   db.query("UPDATE `ADDRESS` SET ? WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ? ) ", [temp_per_addr, member_id], async function (error, results, fields) {
     if (error) {
-      //console.log(error);
+      // console.log(error);
 
       res.json({ "results": { "status": "404" } });
     }
@@ -1357,7 +1406,7 @@ app.post('/update_member', (req, res) => {
   db.query("UPDATE `ADDRESS` SET ? WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ? ) ", [temp_cur_addr, member_id], async function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
 
       res.json({ "results": { "status": "404" } });
     }
@@ -1396,7 +1445,7 @@ app.post('/update_member', (req, res) => {
 
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
 
       res.json({ "results": { "status": "404" } });
     }
@@ -1434,7 +1483,7 @@ app.post('/update_member', (req, res) => {
   db.query("UPDATE `ICE_CONTACT` SET ? WHERE ICE_CONTACT.MEMBER_ID = ?", [sql_temp_contact, member_id], function (error, results, fields) {
 
     if (error) {
-      //console.log(error);
+      // console.log(error);
 
       res.json({ "results": { "status": "404" } });
     }
@@ -1461,7 +1510,7 @@ app.post('/insert_residence', (req, res) => {
   };
   db.query('INSERT INTO MEMBER_HAS_RESIDENCE SET ? ON DUPLICATE KEY UPDATE ?', [temp_residence, temp_residence_on_duplicate], function (error, results, fields) {
     if (error) {
-      console.log(error);
+      // console.log(error);
 
       res.json({ "results": { "status": "404" } });
     }
@@ -1565,10 +1614,10 @@ app.post('/insert_disability', (req, res) => {
         "MEMBER_HAS_DISABILITY_DETAIL": fetch_data_has_disability[index].member_has_disability_detail,
         "DISABILITY_ID": fetch_data_has_disability[index].disability_id
       };
-      console.log(fetch_data_has_disability[index].member_has_disability_id);
+      // console.log(fetch_data_has_disability[index].member_has_disability_id);
       db.query('INSERT INTO MEMBER_HAS_DISABILITY SET ?  ON DUPLICATE KEY UPDATE ?', [temp_has_disability, temp_has_disability_on_duplicate], function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
   
           res.json({ "results": { "status": "404" } });
         }
@@ -1577,7 +1626,7 @@ app.post('/insert_disability', (req, res) => {
     else if(fetch_data_has_disability[index].checked==0){
       db.query('DELETE a FROM MEMBER_HAS_DISABILITY a LEFT JOIN DISABILITY b ON b.DISABILITY_ID = a.DISABILITY_ID WHERE b.DISABILITY_TYPE_ID = ? AND a.MEMBER_ID = ?', [(index+1),member_id], function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
           res.json({ "results": { "status": "404" } });
         }
       });
