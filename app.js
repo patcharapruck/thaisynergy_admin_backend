@@ -284,11 +284,13 @@ app.post('/insert_member', async (req, res) => {
 
 
         ////////// informationMember ///////////
+        console.log(fetchData_member.informationMember);
+        
         const personalData = fetchData_member.informationMember;
         const idcard = personalData.idcard;
         const firstname = personalData.fname;
         const lastname = personalData.lname;
-        const image = personalData.img;
+        const image = personalData.image;
         const birthday = personalData.birthDate;
         const issueby = personalData.issueBy;
         const issuedate = personalData.issueDate;
@@ -305,8 +307,8 @@ app.post('/insert_member', async (req, res) => {
         const mobilephonenumber = phoneContactMember.phoneNumber;
         const faxnumber = phoneContactMember.faxNumber;
         const email = phoneContactMember.email;
-        const line = phoneContactMember.line;
-        const facebook = phoneContactMember.facebook;
+        const line = phoneContactMember.lineId;
+        const facebook = phoneContactMember.facebookId;
 
 
         ////////// informationBody ///////////
@@ -362,7 +364,7 @@ app.post('/insert_member', async (req, res) => {
         let per_addr = 0;
         db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
           if (error) {
-            console.log(error);
+            // console.log(error);
             res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
 
           }
@@ -391,7 +393,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+            // console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -406,10 +408,11 @@ app.post('/insert_member', async (req, res) => {
         
 
 
-        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', '" + birthday + "', '" + issueby + "', '" + issuedate + "', '" + expiry + "', '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', '" + weight + "', '" + height + "', '" + waistline + "', '" + bmi + "', '" + systolic_blood + "', '" + diastolic_blood + "', '" + fasting_sugar + "', '" + disabled_card + "', '" + title_id + "', '" + province + "', LAST_INSERT_ID()-1, LAST_INSERT_ID(), '" + nationality + "', '" + ethnicity + "', '" + religion + "', '" + status_id + "')", function (error, results, fields) {
+        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES(" + idcard + ", '" + firstname + "', '" + lastname + "', " + image + ", " + birthday + ", " + issueby + ", " + issuedate + ", " + expiry + ", " + phonenumber + ", " + mobilephonenumber + ", " + faxnumber + ", " + email + ", " + line + ", " + facebook + ", " + weight + ", " + height + ", " + waistline + ", " + bmi + ", " + systolic_blood + ", " + diastolic_blood + ", " + fasting_sugar + ", " + disabled_card + ", " + title_id + ", " + province + ", LAST_INSERT_ID()-1, LAST_INSERT_ID(), " + nationality + ", " + ethnicity + ", " + religion + ", " + status_id + ")", function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+       
+            // console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -450,7 +453,7 @@ app.post('/insert_member', async (req, res) => {
 
       /////////////////////informationContact/////////////////////////////
 
-        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', " + contact_mobile_phone_number + ", " + contact_fax_number + ", " + contact_email + ", " + contact_line_id + ", " + contact_facebook_id + ", " + contact_name_title_id + ", LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
 
 
         db.query(sql_temp_contact, function (error, results, fields) {
@@ -470,7 +473,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+            // console.log(error);
             res.json({ "results": { "status": "404" } });
           }
           else {
@@ -1623,6 +1626,40 @@ app.post('/get_disability', (req, res) => {
 
     }
   });
+});
+
+
+
+
+//////////////INSERT HEALTH_SCREENING ///////////////////
+app.post('/get_health_screening', (req, res) => {
+  let member_id = req.body.member_id;
+  let temp_data = {
+    "MEMBER_ID":member_id
+  }
+  db.query('INSERT INTO HEALTH_SCREENING SET ?', temp_data, function (error, results, fields) {
+
+    if (error) {
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+        // res.json({ "results": { "status": 200}});
+    }
+  });
+
+  let health_screening_has_choice = req.body.health_screening_has_choice;
+ 
+  db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , (SELECT HEALTH_SCREENING.HEALTH_SCREENING_ID FROM `HEALTH_SCREENING` WHERE HEALTH_SCREENING.MEMBER_ID = ? ), ? )', [health_screening_has_choice.health_screening_has_choice_detail , health_screening_has_choice.health_screening_has_choice_correct , member_id , health_screening_has_choice.health_screening_choice_id], function (error, results, fields) {
+
+    if (error) {
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+        // res.json({ "results": { "status": 200}});
+    }
+  });
+
+
 });
 
 
