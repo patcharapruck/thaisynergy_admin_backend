@@ -130,248 +130,574 @@ app.get('/get_member', (req, res) => {
   });
 });
 
-app.post('/get_member_byid', (req, res) => {
-  console.log("adasdasdasd");
-  
+app.post('/get_member_byid',async (req, res) => {
+
   let member_id = req.body.member_id;
-  let member_data = "";
- 
-  db.query('SELECT * FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
-    //console.log(results);
-    member_data=results[0];
-    console.log(results[0].PERMANENT_ADDRESS_ID);
-    db.query('SELECT * FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = ?',results[0].PERMANENT_ADDRESS_ID, function (error, results, fields) {
-      console.log(results);
-      // member_data=results;
-      console.log(results[0]);
-      // res.json({ results });
-    });
+  let member_info = await get_data_member(member_id);
+  // console.log(member_info);
+  let addr_permanent = await get_data_addr_permanent(member_id);
+  // console.log(addr_permanent);
+  let addr_current = await get_data_addr_current(member_id);
 
+  let ice_contact = await get_data_ice_contact(member_id);
+  let addr_addr_permanent = await get_data_addr_ice_contact(member_id);
+  res.json({ "results": { "status": "200" ,"member_info":member_info,"permanent_address":addr_permanent,"current_address":addr_current,"ice_contact":ice_contact,"ice_contact_address":addr_addr_permanent} });
 
-    // res.json({ results });
-  });
-  // console.log(member_data);
-  
 });
 
+async function get_data_member(id) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+
+async function get_data_addr_permanent(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+async function get_data_addr_current(id) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+async function get_data_ice_contact(id) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?',id, function (error, results, fields) {
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+async function get_data_addr_ice_contact(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+
+
+///////////// GET RIGHT INFOMATION///////////////
+app.post('/get_rights_information',async (req, res) => {
+  
+  let member_id = req.body.member_id;
+  let equipment = await get_rights_information_equipment(member_id);
+  let medical_care = await get_rights_information_medical_care(member_id);
+  let caretaker = await get_rights_information_caretaker(member_id);
+
+  
+  res.json({ "results": { "status": "200" ,"equipment":equipment,"medical_care":medical_care,"caretaker":caretaker} });
+
+});
+async function get_rights_information_equipment(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `EQUIPMENT` WHERE EQUIPMENT.MEMBER_ID = ?',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+async function get_rights_information_medical_care(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `MEDICAL_CARE` WHERE MEDICAL_CARE.MEMBER_ID = ?',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
+
+async function get_rights_information_caretaker(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `CARETAKER` WHERE CARETAKER.MEMBER_ID = ?',id, function (error, results, fields) {
+        // return results[0];
+        resolve(results[0]);
+      });
+    }, 250);
+  });
+}
 
 /////////// insert member ///////////////
 app.post('/insert_member', async (req, res) => {
 
   // console.log(req.body);
-  const fetchData_member = req.body.member;
+  
 
-  const permanentAddressMember = fetchData_member.permanentAddressMember;
-
-  const permanent_address_house_number = permanentAddressMember.houseNumber;
-  const permanent_address_village_number = permanentAddressMember.villageNumber;
-  const permanent_address_lane = permanentAddressMember.alley;
-  const permanent_address_street = permanentAddressMember.road;
-  const permanent_address_locality = permanentAddressMember.houseNumber;
-  const permanent_address_postal_code = permanentAddressMember.postCode;
-  const permanent_subdistrict_id = permanentAddressMember.subDistrict;
-  const permanent_address_status_id = 1;
-
-  let temp_per_addr = {
-    "ADDRESS_HOUSE_NUMBER": permanent_address_house_number,
-    "ADDRESS_VILLAGE_NUMBER": permanent_address_village_number,
-    "ADDRESS_LANE": permanent_address_lane,
-    "ADDRESS_STREET": permanent_address_street,
-    "ADDRESS_LOCALITY": permanent_address_locality,
-    "ADDRESS_POSTAL_CODE": permanent_address_postal_code,
-    "SUBDISTRICT_ID": permanent_subdistrict_id,
-    "ADDRESS_STATUS_ID": permanent_address_status_id
-  };
-
-  let per_addr = 0;
-  db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
-
-    }
-    else {
-      //console.log("Insert permanent address");
-    }
-  });
+  try {
+        const fetchData_member = req.body.member;
+        const permanentAddressMember = fetchData_member.permanentAddressMember;
+        const permanent_address_house_number = permanentAddressMember.houseNumber;
+        const permanent_address_village_number = permanentAddressMember.villageNumber;
+        const permanent_address_lane = permanentAddressMember.alley;
+        const permanent_address_street = permanentAddressMember.road;
+        const permanent_address_locality = permanentAddressMember.houseNumber;
+        const permanent_address_postal_code = permanentAddressMember.postCode;
+        const permanent_subdistrict_id = permanentAddressMember.subDistrict;
+        const permanent_address_status_id = 1;
 
 
-  const currentAddressMember = fetchData_member.currentAddressMember;
-  const current_address_house_number = currentAddressMember.houseNumber;
-  const current_address_village_number = currentAddressMember.villageNumber;
-  const current_address_lane = currentAddressMember.alley;
-  const current_address_street = currentAddressMember.road;
-  const current_address_locality = currentAddressMember.houseNumber;
-  const current_address_postal_code = currentAddressMember.postCode;
-  const current_address_latitude = 1;
-  const current_address_longitude = 1;
-  const current_subdistrict_id = currentAddressMember.subDistrict;
-  const current_address_status_id = 2;
-
-  let temp_cur_addr = {
-    "ADDRESS_HOUSE_NUMBER": current_address_house_number,
-    "ADDRESS_VILLAGE_NUMBER": current_address_village_number,
-    "ADDRESS_LANE": current_address_lane,
-    "ADDRESS_STREET": current_address_street,
-    "ADDRESS_LOCALITY": current_address_locality,
-    "ADDRESS_POSTAL_CODE": current_address_postal_code,
-    "ADDRESS_LATITUDE": current_address_latitude,
-    "ADDRESS_LONGITUDE": current_address_longitude,
-    "SUBDISTRICT_ID": current_subdistrict_id,
-    "ADDRESS_STATUS_ID": current_address_status_id
-  };
-
-  // var temp =0;
-  db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
-
-    if (error) {
-      console.log(error);
-
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("Insert current address");
-    }
-  });
-  // console.log(temp);
+        const currentAddressMember = fetchData_member.currentAddressMember;
+        const current_address_house_number = currentAddressMember.houseNumber;
+        const current_address_village_number = currentAddressMember.villageNumber;
+        const current_address_lane = currentAddressMember.alley;
+        const current_address_street = currentAddressMember.road;
+        const current_address_locality = currentAddressMember.houseNumber;
+        const current_address_postal_code = currentAddressMember.postCode;
+        const current_address_latitude = 1;
+        const current_address_longitude = 1;
+        const current_subdistrict_id = currentAddressMember.subDistrict;
+        const current_address_status_id = 2;
 
 
+        ////////// informationMember ///////////
+        const personalData = fetchData_member.informationMember;
+        const idcard = personalData.idcard;
+        const firstname = personalData.fname;
+        const lastname = personalData.lname;
+        const image = personalData.img;
+        const birthday = personalData.birthDate;
+        const issueby = personalData.issueBy;
+        const issuedate = personalData.issueDate;
+        const expiry = personalData.expiredDate;
+        const title_id = personalData.prefix;
+        const province = personalData.provinceOfBirth;
+        const nationality = personalData.nationality;
+        const ethnicity = personalData.ethnicity;
+        const religion = personalData.religion;
 
-  ////////// informationMember ///////////
-  const personalData = fetchData_member.informationMember;
-  const idcard = personalData.idcard;
-  const firstname = personalData.fname;
-  const lastname = personalData.lname;
-  const image = personalData.img;
-  const birthday = personalData.birthDate;
-  const issueby = personalData.issueBy;
-  const issuedate = personalData.issueDate;
-  const expiry = personalData.expiredDate;
-  const title_id = personalData.prefix;
-  const province = personalData.provinceOfBirth;
-  const nationality = personalData.nationality;
-  const ethnicity = personalData.ethnicity;
-  const religion = personalData.religion;
-
-  ////////// phoneContactMember ///////////
-  const phoneContactMember = fetchData_member.phoneContactMember;
-  const phonenumber = phoneContactMember.telNumber;
-  const mobilephonenumber = phoneContactMember.phoneNumber;
-  const faxnumber = phoneContactMember.faxNumber;
-  const email = phoneContactMember.email;
-  const line = phoneContactMember.line;
-  const facebook = phoneContactMember.facebook;
-
-
-  ////////// informationBody ///////////
-  const informationBody = fetchData_member.informationBody;
-  const weight = informationBody.weight;
-  const height = informationBody.height;
-  const waistline = informationBody.waistline;
-  const bmi = informationBody.bmi;
-  const systolic_blood = informationBody.sbp;
-  const diastolic_blood = informationBody.dbp;
-  const fasting_sugar = informationBody.fbs;
-  const disabled_card = informationBody.disabledCard;
-  const status_id = informationBody.memberStatus;
+        ////////// phoneContactMember ///////////
+        const phoneContactMember = fetchData_member.phoneContactMember;
+        const phonenumber = phoneContactMember.telNumber;
+        const mobilephonenumber = phoneContactMember.phoneNumber;
+        const faxnumber = phoneContactMember.faxNumber;
+        const email = phoneContactMember.email;
+        const line = phoneContactMember.line;
+        const facebook = phoneContactMember.facebook;
 
 
-  db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', '" + birthday + "', '" + issueby + "', '" + issuedate + "', '" + expiry + "', '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', '" + weight + "', '" + height + "', '" + waistline + "', '" + bmi + "', '" + systolic_blood + "', '" + diastolic_blood + "', '" + fasting_sugar + "', '" + disabled_card + "', '" + title_id + "', '" + province + "', LAST_INSERT_ID()-1, LAST_INSERT_ID(), '" + nationality + "', '" + ethnicity + "', '" + religion + "', '" + status_id + "')", function (error, results, fields) {
-
-    if (error) {
-      console.log(error);
-
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("Insert Member Success");
-    }
-
-
-  });
+        ////////// informationBody ///////////
+        const informationBody = fetchData_member.informationBody;
+        const weight = informationBody.weight;
+        const height = informationBody.height;
+        const waistline = informationBody.waistline;
+        const bmi = informationBody.bmi;
+        const systolic_blood = informationBody.sbp;
+        const diastolic_blood = informationBody.dbp;
+        const fasting_sugar = informationBody.fbs;
+        const disabled_card = informationBody.disabledCard;
+        const status_id = informationBody.memberStatus;
 
 
+        
+        /////////////////////contact addr/////////////////////////////
+        const fetchData_contact = req.body.contact;
+        const contactAddress = fetchData_contact.contactAddress;
+        const contact_address_house_number = contactAddress.houseNumber;
+        const contact_address_village_number = contactAddress.villageNumber;
+        const contact_address_lane = contactAddress.alley;
+        const contact_address_street = contactAddress.road;
+        const contact_address_locality = contactAddress.locality;
+        const contact_address_postal_code = contactAddress.postCode;
+        const contact_subdistrict_id = contactAddress.subDistrict;
 
-  const fetchData_contact = req.body.contact;
+        /////////////////////informationContact/////////////////////////////
+        const informationContact = fetchData_contact.informationContact;
+        const contact_name_title_id = informationContact.contactPrefix;
+        const contact_first_name = informationContact.contactFname;
+        const contact_last_name = informationContact.contactLname;
 
-  const contactAddress = fetchData_contact.contactAddress;
-  const contact_address_house_number = contactAddress.houseNumber;
-  const contact_address_village_number = contactAddress.villageNumber;
-  const contact_address_lane = contactAddress.alley;
-  const contact_address_street = contactAddress.road;
-  const contact_address_locality = contactAddress.locality;
-  const contact_address_postal_code = contactAddress.postCode;
-  const contact_subdistrict_id = contactAddress.subDistrict;
+        const phoneContact = fetchData_contact.phoneContact;
+        const contact_phone_number = phoneContact.telNumber;
+        const contact_mobile_phone_number = phoneContact.phoneNumber;
+        const contact_fax_number = phoneContact.faxNumber;
+        const contact_email = phoneContact.email;
+        const contact_line_id = phoneContact.lineId;
+        const contact_facebook_id = phoneContact.facebookId;
+
+        let temp_per_addr = {
+          "ADDRESS_HOUSE_NUMBER": permanent_address_house_number,
+          "ADDRESS_VILLAGE_NUMBER": permanent_address_village_number,
+          "ADDRESS_LANE": permanent_address_lane,
+          "ADDRESS_STREET": permanent_address_street,
+          "ADDRESS_LOCALITY": permanent_address_locality,
+          "ADDRESS_POSTAL_CODE": permanent_address_postal_code,
+          "SUBDISTRICT_ID": permanent_subdistrict_id,
+          "ADDRESS_STATUS_ID": permanent_address_status_id
+        };
+
+        let per_addr = 0;
+        db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
+          if (error) {
+            console.log(error);
+            res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
+
+          }
+          else {
+            //console.log("Insert permanent address");
+          }
+        });
 
 
-  let temp_addr_contact = {
-    "ADDRESS_HOUSE_NUMBER": contact_address_house_number,
-    "ADDRESS_VILLAGE_NUMBER": contact_address_village_number,
-    "ADDRESS_LANE": contact_address_lane,
-    "ADDRESS_STREET": contact_address_street,
-    "ADDRESS_LOCALITY": contact_address_locality,
-    "ADDRESS_POSTAL_CODE": contact_address_postal_code,
-    "SUBDISTRICT_ID": contact_subdistrict_id,
-    "ADDRESS_STATUS_ID": 1
+        
+
+        let temp_cur_addr = {
+          "ADDRESS_HOUSE_NUMBER": current_address_house_number,
+          "ADDRESS_VILLAGE_NUMBER": current_address_village_number,
+          "ADDRESS_LANE": current_address_lane,
+          "ADDRESS_STREET": current_address_street,
+          "ADDRESS_LOCALITY": current_address_locality,
+          "ADDRESS_POSTAL_CODE": current_address_postal_code,
+          "ADDRESS_LATITUDE": current_address_latitude,
+          "ADDRESS_LONGITUDE": current_address_longitude,
+          "SUBDISTRICT_ID": current_subdistrict_id,
+          "ADDRESS_STATUS_ID": current_address_status_id
+        };
+
+        // var temp =0;
+        db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
+
+          if (error) {
+            console.log(error);
+
+            res.json({ "results": { "status": "404" } });
+          }
+          else {
+            //console.log("Insert current address");
+          }
+        });
+        // console.log(temp);
+
+
+
+        
+
+
+        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', '" + birthday + "', '" + issueby + "', '" + issuedate + "', '" + expiry + "', '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', '" + weight + "', '" + height + "', '" + waistline + "', '" + bmi + "', '" + systolic_blood + "', '" + diastolic_blood + "', '" + fasting_sugar + "', '" + disabled_card + "', '" + title_id + "', '" + province + "', LAST_INSERT_ID()-1, LAST_INSERT_ID(), '" + nationality + "', '" + ethnicity + "', '" + religion + "', '" + status_id + "')", function (error, results, fields) {
+
+          if (error) {
+            console.log(error);
+
+            res.json({ "results": { "status": "404" } });
+          }
+          else {
+            //console.log("Insert Member Success");
+          }
+
+
+        });
+
+
+        /////////////////////contact addr/////////////////////////////
+
+        let temp_addr_contact = {
+          "ADDRESS_HOUSE_NUMBER": contact_address_house_number,
+          "ADDRESS_VILLAGE_NUMBER": contact_address_village_number,
+          "ADDRESS_LANE": contact_address_lane,
+          "ADDRESS_STREET": contact_address_street,
+          "ADDRESS_LOCALITY": contact_address_locality,
+          "ADDRESS_POSTAL_CODE": contact_address_postal_code,
+          "SUBDISTRICT_ID": contact_subdistrict_id,
+          "ADDRESS_STATUS_ID": 1
+        }
+
+        db.query("INSERT INTO ADDRESS SET ?", temp_addr_contact, function (error, results, fields) {
+
+
+          if (error) {
+            // console.log(error);
+
+            res.json({ "results": { "status": "404" } });
+          }
+          else {
+            //console.log("Insert contact address");
+          }
+        });
+
+
+      /////////////////////informationContact/////////////////////////////
+
+        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+
+
+        db.query(sql_temp_contact, function (error, results, fields) {
+
+          if (error) {
+            // console.log(error);
+
+            res.json({ "results": { "status": "404" } });
+          }
+          else {
+            //console.log("Insert ICE_CONTACT Success");
+
+            // res.json({"status":"200"});
+          }
+        });
+
+        db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
+
+          if (error) {
+            console.log(error);
+            res.json({ "results": { "status": "404" } });
+          }
+          else {
+            //console.log("Insert ICE_CONTACT Success");
+            let data = results[0];
+            res.json({ "results": { "status": "200", data } });
+          }
+        });
+
+  } catch (error) {
+    res.json({ "results": { "status": "404" } });
   }
 
-  db.query("INSERT INTO ADDRESS SET ?", temp_addr_contact, function (error, results, fields) {
+
+  // const fetchData_member = req.body.member;
+
+  // const permanentAddressMember = fetchData_member.permanentAddressMember;
+
+  // const permanent_address_house_number = permanentAddressMember.houseNumber;
+  // const permanent_address_village_number = permanentAddressMember.villageNumber;
+  // const permanent_address_lane = permanentAddressMember.alley;
+  // const permanent_address_street = permanentAddressMember.road;
+  // const permanent_address_locality = permanentAddressMember.houseNumber;
+  // const permanent_address_postal_code = permanentAddressMember.postCode;
+  // const permanent_subdistrict_id = permanentAddressMember.subDistrict;
+  // const permanent_address_status_id = 1;
+
+  // let temp_per_addr = {
+  //   "ADDRESS_HOUSE_NUMBER": permanent_address_house_number,
+  //   "ADDRESS_VILLAGE_NUMBER": permanent_address_village_number,
+  //   "ADDRESS_LANE": permanent_address_lane,
+  //   "ADDRESS_STREET": permanent_address_street,
+  //   "ADDRESS_LOCALITY": permanent_address_locality,
+  //   "ADDRESS_POSTAL_CODE": permanent_address_postal_code,
+  //   "SUBDISTRICT_ID": permanent_subdistrict_id,
+  //   "ADDRESS_STATUS_ID": permanent_address_status_id
+  // };
+
+  // let per_addr = 0;
+  // db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
+  //   if (error) {
+  //     console.log(error);
+  //     res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
+
+  //   }
+  //   else {
+  //     //console.log("Insert permanent address");
+  //   }
+  // });
 
 
-    if (error) {
-      // console.log(error);
+  // const currentAddressMember = fetchData_member.currentAddressMember;
+  // const current_address_house_number = currentAddressMember.houseNumber;
+  // const current_address_village_number = currentAddressMember.villageNumber;
+  // const current_address_lane = currentAddressMember.alley;
+  // const current_address_street = currentAddressMember.road;
+  // const current_address_locality = currentAddressMember.houseNumber;
+  // const current_address_postal_code = currentAddressMember.postCode;
+  // const current_address_latitude = 1;
+  // const current_address_longitude = 1;
+  // const current_subdistrict_id = currentAddressMember.subDistrict;
+  // const current_address_status_id = 2;
 
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("Insert contact address");
-    }
-  });
+  // let temp_cur_addr = {
+  //   "ADDRESS_HOUSE_NUMBER": current_address_house_number,
+  //   "ADDRESS_VILLAGE_NUMBER": current_address_village_number,
+  //   "ADDRESS_LANE": current_address_lane,
+  //   "ADDRESS_STREET": current_address_street,
+  //   "ADDRESS_LOCALITY": current_address_locality,
+  //   "ADDRESS_POSTAL_CODE": current_address_postal_code,
+  //   "ADDRESS_LATITUDE": current_address_latitude,
+  //   "ADDRESS_LONGITUDE": current_address_longitude,
+  //   "SUBDISTRICT_ID": current_subdistrict_id,
+  //   "ADDRESS_STATUS_ID": current_address_status_id
+  // };
 
-  const informationContact = fetchData_contact.informationContact;
-  const contact_name_title_id = informationContact.contactPrefix;
-  const contact_first_name = informationContact.contactFname;
-  const contact_last_name = informationContact.contactLname;
+  // // var temp =0;
+  // db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
 
-  const phoneContact = fetchData_contact.phoneContact;
-  const contact_phone_number = phoneContact.telNumber;
-  const contact_mobile_phone_number = phoneContact.phoneNumber;
-  const contact_fax_number = phoneContact.faxNumber;
-  const contact_email = phoneContact.email;
-  const contact_line_id = phoneContact.lineId;
-  const contact_facebook_id = phoneContact.facebookId;
+  //   if (error) {
+  //     console.log(error);
 
-
-
-  let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("Insert current address");
+  //   }
+  // });
+  // // console.log(temp);
 
 
-  db.query(sql_temp_contact, function (error, results, fields) {
 
-    if (error) {
-      // console.log(error);
+  // ////////// informationMember ///////////
+  // const personalData = fetchData_member.informationMember;
+  // const idcard = personalData.idcard;
+  // const firstname = personalData.fname;
+  // const lastname = personalData.lname;
+  // const image = personalData.img;
+  // const birthday = personalData.birthDate;
+  // const issueby = personalData.issueBy;
+  // const issuedate = personalData.issueDate;
+  // const expiry = personalData.expiredDate;
+  // const title_id = personalData.prefix;
+  // const province = personalData.provinceOfBirth;
+  // const nationality = personalData.nationality;
+  // const ethnicity = personalData.ethnicity;
+  // const religion = personalData.religion;
 
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("Insert ICE_CONTACT Success");
+  // ////////// phoneContactMember ///////////
+  // const phoneContactMember = fetchData_member.phoneContactMember;
+  // const phonenumber = phoneContactMember.telNumber;
+  // const mobilephonenumber = phoneContactMember.phoneNumber;
+  // const faxnumber = phoneContactMember.faxNumber;
+  // const email = phoneContactMember.email;
+  // const line = phoneContactMember.line;
+  // const facebook = phoneContactMember.facebook;
 
-      // res.json({"status":"200"});
-    }
-  });
 
-  db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
+  // ////////// informationBody ///////////
+  // const informationBody = fetchData_member.informationBody;
+  // const weight = informationBody.weight;
+  // const height = informationBody.height;
+  // const waistline = informationBody.waistline;
+  // const bmi = informationBody.bmi;
+  // const systolic_blood = informationBody.sbp;
+  // const diastolic_blood = informationBody.dbp;
+  // const fasting_sugar = informationBody.fbs;
+  // const disabled_card = informationBody.disabledCard;
+  // const status_id = informationBody.memberStatus;
 
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("Insert ICE_CONTACT Success");
-      let data = results[0];
-      res.json({ "results": { "status": "200", data } });
-    }
-  });
+
+  // db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', '" + birthday + "', '" + issueby + "', '" + issuedate + "', '" + expiry + "', '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', '" + weight + "', '" + height + "', '" + waistline + "', '" + bmi + "', '" + systolic_blood + "', '" + diastolic_blood + "', '" + fasting_sugar + "', '" + disabled_card + "', '" + title_id + "', '" + province + "', LAST_INSERT_ID()-1, LAST_INSERT_ID(), '" + nationality + "', '" + ethnicity + "', '" + religion + "', '" + status_id + "')", function (error, results, fields) {
+
+  //   if (error) {
+  //     console.log(error);
+
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("Insert Member Success");
+  //   }
+
+
+  // });
+
+
+
+  // const fetchData_contact = req.body.contact;
+
+  // const contactAddress = fetchData_contact.contactAddress;
+  // const contact_address_house_number = contactAddress.houseNumber;
+  // const contact_address_village_number = contactAddress.villageNumber;
+  // const contact_address_lane = contactAddress.alley;
+  // const contact_address_street = contactAddress.road;
+  // const contact_address_locality = contactAddress.locality;
+  // const contact_address_postal_code = contactAddress.postCode;
+  // const contact_subdistrict_id = contactAddress.subDistrict;
+
+
+  // let temp_addr_contact = {
+  //   "ADDRESS_HOUSE_NUMBER": contact_address_house_number,
+  //   "ADDRESS_VILLAGE_NUMBER": contact_address_village_number,
+  //   "ADDRESS_LANE": contact_address_lane,
+  //   "ADDRESS_STREET": contact_address_street,
+  //   "ADDRESS_LOCALITY": contact_address_locality,
+  //   "ADDRESS_POSTAL_CODE": contact_address_postal_code,
+  //   "SUBDISTRICT_ID": contact_subdistrict_id,
+  //   "ADDRESS_STATUS_ID": 1
+  // }
+
+  // db.query("INSERT INTO ADDRESS SET ?", temp_addr_contact, function (error, results, fields) {
+
+
+  //   if (error) {
+  //     // console.log(error);
+
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("Insert contact address");
+  //   }
+  // });
+
+  // const informationContact = fetchData_contact.informationContact;
+  // const contact_name_title_id = informationContact.contactPrefix;
+  // const contact_first_name = informationContact.contactFname;
+  // const contact_last_name = informationContact.contactLname;
+
+  // const phoneContact = fetchData_contact.phoneContact;
+  // const contact_phone_number = phoneContact.telNumber;
+  // const contact_mobile_phone_number = phoneContact.phoneNumber;
+  // const contact_fax_number = phoneContact.faxNumber;
+  // const contact_email = phoneContact.email;
+  // const contact_line_id = phoneContact.lineId;
+  // const contact_facebook_id = phoneContact.facebookId;
+
+
+
+  // let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+
+
+  // db.query(sql_temp_contact, function (error, results, fields) {
+
+  //   if (error) {
+  //     // console.log(error);
+
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("Insert ICE_CONTACT Success");
+
+  //     // res.json({"status":"200"});
+  //   }
+  // });
+
+  // db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
+
+  //   if (error) {
+  //     console.log(error);
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("Insert ICE_CONTACT Success");
+  //     let data = results[0];
+  //     res.json({ "results": { "status": "200", data } });
+  //   }
+  // });
 });
 
 app.post('/delete_member', (req, res) => {
@@ -1144,7 +1470,6 @@ app.post('/insert_residence', (req, res) => {
 
 //////////////get_residence///////////////////
 app.get('/get_residence', (req, res) => {
-  let member_id = req.body.disability;
   db.query('SELECT * FROM `RESIDENCE`', function (error, results, fields) {
 
     if (error) {
@@ -1154,6 +1479,20 @@ app.get('/get_residence', (req, res) => {
     else {
       res.json({ "results": { "status": 200, "data": results } });
       // res.json({"status":200,"data":results})
+    }
+  });
+});
+
+
+app.post('/get_has_residence', (req, res) => {
+  let member_id = req.body.member_id;
+  db.query('SELECT * FROM `MEMBER_HAS_RESIDENCE` WHERE MEMBER_HAS_RESIDENCE.MEMBER_ID = ?',member_id, function (error, results, fields) {
+
+    if (error) {
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+      res.json({ "results": { "status": 200, "data": results[0] } });
     }
   });
 });
