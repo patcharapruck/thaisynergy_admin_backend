@@ -134,14 +134,15 @@ app.post('/get_member_byid',async (req, res) => {
 
   let member_id = req.body.member_id;
   let member_info = await get_data_member(member_id);
-  // console.log(member_info);
+  console.log(member_info);
   let addr_permanent = await get_data_addr_permanent(member_id);
-  // console.log(addr_permanent);
+  console.log(addr_permanent);
   let addr_current = await get_data_addr_current(member_id);
-
+  console.log(addr_current);
   let ice_contact = await get_data_ice_contact(member_id);
+  console.log(ice_contact);
   let addr_addr_permanent = await get_data_addr_ice_contact(member_id);
-  res.json({ "results": { "status": "200" ,"member_info":member_info,"permanent_address":addr_permanent,"current_address":addr_current,"ice_contact":ice_contact,"ice_contact_address":addr_addr_permanent} });
+  res.json({ "results": { "status": "200" ,"data":{"member_info":member_info,"permanent_address":addr_permanent,"current_address":addr_current,"ice_contact":ice_contact,"ice_contact_address":addr_addr_permanent} }});
 
 });
 
@@ -149,6 +150,10 @@ async function get_data_member(id) {
   return new Promise(resolve => {
     setTimeout(() => {
       db.query('SELECT * FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',id, function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          
+        }
         // return results[0];
         resolve(results[0]);
       });
@@ -163,6 +168,10 @@ async function get_data_addr_permanent(id) {
     setTimeout(() => {
       db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
         // return results[0];
+        if (error) {
+          console.log(error);
+          
+        }
         resolve(results[0]);
       });
     }, 250);
@@ -173,6 +182,10 @@ async function get_data_addr_current(id) {
   return new Promise(resolve => {
     setTimeout(() => {
       db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          
+        }
         resolve(results[0]);
       });
     }, 250);
@@ -183,6 +196,10 @@ async function get_data_ice_contact(id) {
   return new Promise(resolve => {
     setTimeout(() => {
       db.query('SELECT * FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?',id, function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          
+        }
         resolve(results[0]);
       });
     }, 250);
@@ -194,7 +211,10 @@ async function get_data_addr_ice_contact(id) {
   return new Promise(resolve => {
     setTimeout(() => {
       db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
-        // return results[0];
+        if (error) {
+          console.log(error);
+          
+        }
         resolve(results[0]);
       });
     }, 250);
