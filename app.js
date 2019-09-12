@@ -53,6 +53,87 @@ db.connect((err) => {
   //console.log('Mysql Connected...');
 });
 
+
+app.post('/insert_user', async (req, res) => {
+
+  let fetch_login = req.body.login;
+  // let username = fetch_login.username;
+  
+  let password = fetch_login.password;
+
+
+  let fetch_user = req.body.user;
+  let department_id = fetch_user.department_id;
+  let idcard = fetch_user.user_identification_number;
+  let user_first_name = fetch_user.user_first_name;
+  let user_last_name = fetch_user.user_last_name;
+  let user_image = fetch_user.user_image;
+  let user_email = fetch_user.user_email;
+  let user_line_id = fetch_user.user_line_id;
+  let user_facebook_id = fetch_user.user_facebook_id;
+  let name_title_id = fetch_user.name_title_id;
+  let subdistrict_id = fetch_user.subdistrict_id;
+  // let department_id = fetch_user.department_id;
+  let user_type_id = fetch_user.user_type_id;
+
+  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'00',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ? ))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'00',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?)))),?))",[department_id,department_id,department_id,department_id,password], function (error, results, fields) {
+      if (error) {
+        // console.log(error);
+        
+        res.json({ "results": { "status": "400" } });
+      }
+    });
+
+
+    db.query("INSERT INTO `USER`(`USER_ID`,`USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_IMAGE`, `USER_EMAIL`, `USER_LINE_ID`, `USER_FACEBOOK_ID`, `NAME_TITLE_ID`, `SUBDISTRICT_ID`, `DEPARTMENT_ID`, `LOGIN_ID`, `USER_TYPE_ID`) VALUES (UNIX_TIMESTAMP()*1000,?,?,?,?,?,?,?,?,?,?,LAST_INSERT_ID(),?)",[idcard , user_first_name , user_last_name , user_image , user_email , user_line_id , user_facebook_id , name_title_id , subdistrict_id , department_id , user_type_id], function (error, results, fields) {
+      if (error) {
+        // console.log(error);
+        res.json({ "results": { "status": "404" } });
+      }
+      else {
+        // res.json({ "results": { "status": "200","data":{"username":username,"password":password} } });
+      }
+    });
+
+
+    db.query("SELECT LOGIN.LOGIN_USERNAME FROM `LOGIN` WHERE LOGIN.LOGIN_ID = LAST_INSERT_ID()", function (error, results, fields) {
+      if (error) {
+        res.json({ "results": { "status": "404" } });
+      }
+      else {
+        res.json({ "results": { "status": "200","data":{"username":results[0].LOGIN_USERNAME,"password":password} } });
+      }
+    });
+
+
+});
+
+
+app.post('/user_login', async (req, res) => {
+
+  let fetch_login = req.body.login;
+  let username = fetch_login.username;
+  let password = fetch_login.password;
+  
+
+    db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname FROM `LOGIN` WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?)",[username,username,password], function (error, results, fields) {
+      if (error) {
+        res.json({ "results": { "status": "404" } });
+      }
+      else {
+        if (results[0].count_user>=1) {
+          res.json({ "results": { "status": "200","data": { "user_id":results[0].LOGIN_ID,"fullname":results[0].fullname}} });
+        }
+        else{
+          res.json({ "results": { "status": "204","data": "Username Or Password Not found"} });
+        }
+        
+      }
+    });
+});
+
+
+
 /////////// General Data ///////////////
 app.get('/get_prefix', (req, res) => {
   db.query('SELECT * FROM `NAME_TITLE`', function (error, results, fields) {
@@ -133,14 +214,16 @@ app.get('/get_member', (req, res) => {
 app.post('/get_member_byid',async (req, res) => {
 
   let member_id = req.body.member_id;
+  // console.log("asdasds");
+  
   let member_info = await get_data_member(member_id);
-  console.log(member_info);
+  // console.log(member_info);
   let addr_permanent = await get_data_addr_permanent(member_id);
-  console.log(addr_permanent);
+  // console.log(addr_permanent);
   let addr_current = await get_data_addr_current(member_id);
-  console.log(addr_current);
+  // console.log(addr_current);
   let ice_contact = await get_data_ice_contact(member_id);
-  console.log(ice_contact);
+  // console.log(ice_contact);
   let addr_addr_permanent = await get_data_addr_ice_contact(member_id);
   res.json({ "results": { "status": "200" ,"data":{"member_info":member_info,"permanent_address":addr_permanent,"current_address":addr_current,"ice_contact":ice_contact,"ice_contact_address":addr_addr_permanent} }});
 
@@ -151,7 +234,7 @@ async function get_data_member(id) {
     setTimeout(() => {
       db.query('SELECT * FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',id, function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
           
         }
         // return results[0];
@@ -166,10 +249,10 @@ async function get_data_addr_permanent(id) {
   
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?) AND ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID',id, function (error, results, fields) {
         // return results[0];
         if (error) {
-          console.log(error);
+          // console.log(error);
           
         }
         resolve(results[0]);
@@ -181,9 +264,9 @@ async function get_data_addr_permanent(id) {
 async function get_data_addr_current(id) {
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?) AND ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID',id, function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
           
         }
         resolve(results[0]);
@@ -197,7 +280,7 @@ async function get_data_ice_contact(id) {
     setTimeout(() => {
       db.query('SELECT * FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?',id, function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
           
         }
         resolve(results[0]);
@@ -210,9 +293,9 @@ async function get_data_addr_ice_contact(id) {
   
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT * FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID AND ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
         if (error) {
-          console.log(error);
+          // console.log(error);
           
         }
         resolve(results[0]);
@@ -274,10 +357,12 @@ async function get_rights_information_caretaker(id) {
 /////////// insert member ///////////////
 app.post('/insert_member', async (req, res) => {
 
-  // console.log(req.body);
+  console.log(req.body);
   
 
   try {
+
+        const user_id = req.body.user_id;
         const fetchData_member = req.body.member;
         const permanentAddressMember = fetchData_member.permanentAddressMember;
         const permanent_address_house_number = permanentAddressMember.houseNumber;
@@ -297,14 +382,14 @@ app.post('/insert_member', async (req, res) => {
         const current_address_street = currentAddressMember.road;
         const current_address_locality = currentAddressMember.houseNumber;
         const current_address_postal_code = currentAddressMember.postCode;
-        const current_address_latitude = 1;
-        const current_address_longitude = 1;
+        const current_address_latitude = currentAddressMember.latitude;;
+        const current_address_longitude = currentAddressMember.longitude;;
         const current_subdistrict_id = currentAddressMember.subDistrict;
         const current_address_status_id = 2;
 
 
         ////////// informationMember ///////////
-        console.log(fetchData_member.informationMember);
+        // console.log(fetchData_member.informationMember);
         
         const personalData = fetchData_member.informationMember;
         const idcard = personalData.idcard;
@@ -316,7 +401,7 @@ app.post('/insert_member', async (req, res) => {
         const birthday_data = personalData.birthDate;
         let birthday=null;
         if (birthday_data!='') {
-          birthday="\'"+birthday_data+"\'";
+          birthday=birthday_data;
         }
 
 
@@ -330,14 +415,14 @@ app.post('/insert_member', async (req, res) => {
 
         let issuedate=null;
         if (issuedate_data!='') {
-          issuedate="\'"+issuedate_data+"\'";
+          issuedate=issuedate_data;
         }
 
         const expiry_data = personalData.expiredDate;
 
         let expiry=null;
         if (issuedate_data!='') {
-          expiry="\'"+expiry_data+"\'";
+          expiry=expiry_data;
         }
 
 
@@ -350,6 +435,8 @@ app.post('/insert_member', async (req, res) => {
         const nationality = personalData.nationality;
         const ethnicity = personalData.ethnicity;
         const religion = personalData.religion;
+
+        
 
         ////////// phoneContactMember ///////////
         const phoneContactMember = fetchData_member.phoneContactMember;
@@ -414,7 +501,7 @@ app.post('/insert_member', async (req, res) => {
         let per_addr = 0;
         db.query("INSERT INTO ADDRESS SET ?", temp_per_addr, async function (error, results, fields) {
           if (error) {
-            console.log(error);
+            // console.log(error);
             res.json({ "results": { "status": "404", "massage": 'Cannot Insert permanent address' } });
 
           }
@@ -443,7 +530,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("INSERT INTO ADDRESS SET ?", temp_cur_addr, function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+            // console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -454,20 +541,56 @@ app.post('/insert_member', async (req, res) => {
         // console.log(temp);
 
 
-
+        // INSERT INTO MEMBER(MEMBER_ID, MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, MEMBER_CREATED_DATE, MEMBER_LAST_EDITED_DATE, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID, USER_ID) VALUES(UNIX_TIMESTAMP()*1000, '1234567890121', 'ทองคำ', 'พรหมศักดิ์', NULL, '1960-02-07', 'ที่ว่าการเขต', '2017-02-07', '2022-02-06', '0987654321', '023456789', '021234567', 'tongkom.pro@gmail.com', 'tongkom.pro', 'Tongkom Promsak', '50.5', '175.5', '28', '16.4', '120', '80', '70', 0, '2019-09-01', '2019-09-01', 1, 1, 1, 1, 2, 1, 2, 1, '3210987654321')
         
-
-
-        db.query("INSERT INTO MEMBER(MEMBER_IDENTIFICATION_NUMBER, MEMBER_FIRST_NAME, MEMBER_LAST_NAME, MEMBER_IMAGE, MEMBER_BIRTH_DATE, MEMBER_ISSUE_BY, MEMBER_ISSUE_DATE, MEMBER_EXPIRY_DATE, MEMBER_PHONE_NUMBER, MEMBER_MOBILE_PHONE_NUMBER, MEMBER_FAX_NUMBER, MEMBER_EMAIL, MEMBER_LINE_ID, MEMBER_FACEBOOK_ID, MEMBER_WEIGHT, MEMBER_HEIGHT, MEMBER_WAISTLINE, MEMBER_BMI, MEMBER_SYSTOLIC_BLOOD_PRESSURE, MEMBER_DIASTOLIC_BLOOD_PRESSURE, MEMBER_FASTING_BLOOD_SUGAR, MEMBER_DISABLED_CARD, NAME_TITLE_ID, BIRTHPLACE_PROVINCE_ID, PERMANENT_ADDRESS_ID, CURRENT_ADDRESS_ID, NATIONALITY_ID, ETHNICITY_ID, RELIGION_ID, MEMBER_STATUS_ID) VALUES('" + idcard + "', '" + firstname + "', '" + lastname + "', '" + image + "', " + birthday + ", '" + issueby + "', " + issuedate + ", " + expiry + ", '" + phonenumber + "', '" + mobilephonenumber + "', '" + faxnumber + "', '" + email + "', '" + line + "', '" + facebook + "', " + weight + ", " + height + ", " + waistline + ", " + bmi + ", " + systolic_blood + ", " + diastolic_blood + ", " + fasting_sugar + ", " + disabled_card + ", " + title_id + ", " + province + ", LAST_INSERT_ID()-1, LAST_INSERT_ID(), " + nationality + ", " + ethnicity + ", " + religion + ", " + status_id + ")", function (error, results, fields) {
+        // INSERT INTO `MEMBER`(`MEMBER_ID`, `MEMBER_IDENTIFICATION_NUMBER`, `MEMBER_FIRST_NAME`, `MEMBER_LAST_NAME`, `MEMBER_IMAGE`, `MEMBER_BIRTH_DATE`, `MEMBER_ISSUE_BY`, `MEMBER_ISSUE_DATE`, `MEMBER_EXPIRY_DATE`, `MEMBER_PHONE_NUMBER`, `MEMBER_MOBILE_PHONE_NUMBER`, `MEMBER_FAX_NUMBER`, `MEMBER_EMAIL`, `MEMBER_LINE_ID`, `MEMBER_FACEBOOK_ID`, `MEMBER_WEIGHT`, `MEMBER_HEIGHT`, `MEMBER_WAISTLINE`, `MEMBER_BMI`, `MEMBER_SYSTOLIC_BLOOD_PRESSURE`, `MEMBER_DIASTOLIC_BLOOD_PRESSURE`, `MEMBER_FASTING_BLOOD_SUGAR`, `MEMBER_DISABLED_CARD`, `MEMBER_CREATED_DATE`, `MEMBER_LAST_EDITED_DATE`, `NAME_TITLE_ID`, `BIRTHPLACE_PROVINCE_ID`, `PERMANENT_ADDRESS_ID`, `CURRENT_ADDRESS_ID`, `NATIONALITY_ID`, `ETHNICITY_ID`, `RELIGION_ID`, `MEMBER_STATUS_ID`, `USER_ID`) VALUES ([value-1],[value-2],[value-3],[value-4],[value-5],[value-6],[value-7],[value-8],[value-9],[value-10],[value-11],[value-12],[value-13],[value-14],[value-15],[value-16],[value-17],[value-18],[value-19],[value-20],[value-21],[value-22],[value-23],[value-24],[value-25],[value-26],[value-27],[value-28],[value-29],[value-30],[value-31],[value-32],[value-33],[value-34])
+        // db.query("INSERT INTO MEMBER(
+        //   MEMBER_ID, 
+        //   MEMBER_IDENTIFICATION_NUMBER, 
+        //   MEMBER_FIRST_NAME, 
+        //   MEMBER_LAST_NAME, 
+        //   MEMBER_IMAGE, 
+        //   MEMBER_BIRTH_DATE, 
+        //   MEMBER_ISSUE_BY, 
+        //   MEMBER_ISSUE_DATE,
+        //   MEMBER_EXPIRY_DATE, 
+        //   MEMBER_PHONE_NUMBER, 
+        //   MEMBER_MOBILE_PHONE_NUMBER, 
+        //   MEMBER_FAX_NUMBER, 
+        //   MEMBER_EMAIL, 
+        //   MEMBER_LINE_ID,
+        //   MEMBER_FACEBOOK_ID, 
+        //   MEMBER_WEIGHT, 
+        //   MEMBER_HEIGHT, 
+        //   MEMBER_WAISTLINE, 
+        //   MEMBER_BMI, 
+        //   MEMBER_SYSTOLIC_BLOOD_PRESSURE, 
+        //   MEMBER_DIASTOLIC_BLOOD_PRESSURE, 
+        //   MEMBER_FASTING_BLOOD_SUGAR, 
+        //   MEMBER_DISABLED_CARD, 
+        //   MEMBER_CREATED_DATE, 
+        //   MEMBER_LAST_EDITED_DATE, 
+        //   NAME_TITLE_ID, 
+        //   BIRTHPLACE_PROVINCE_ID, 
+        //   PERMANENT_ADDRESS_ID, 
+        //   CURRENT_ADDRESS_ID, 
+        //   NATIONALITY_ID, 
+        //   ETHNICITY_ID, 
+        //   RELIGION_ID, 
+        //   MEMBER_STATUS_ID, USER_ID) VALUES(UNIX_TIMESTAMP()*1000, '1234567890121', 'ทองคำ', 'พรหมศักดิ์', NULL, '1960-02-07', 'ที่ว่าการเขต', '2017-02-07', '2022-02-06', '0987654321', '023456789', '021234567', 'tongkom.pro@gmail.com', 'tongkom.pro', 'Tongkom Promsak', '50.5', '175.5', '28', '16.4', '120', '80', '70', 0, '2019-09-01', '2019-09-01', 1, 1, 1, 1, 2, 1, 2, 1, '3210987654321')",
+        
+        
+        // , function (error, results, fields) {
+        db.query("INSERT INTO `MEMBER`(`MEMBER_ID`, `MEMBER_IDENTIFICATION_NUMBER`, `MEMBER_FIRST_NAME`, `MEMBER_LAST_NAME`, `MEMBER_IMAGE`, `MEMBER_BIRTH_DATE`, `MEMBER_ISSUE_BY`, `MEMBER_ISSUE_DATE`, `MEMBER_EXPIRY_DATE`, `MEMBER_PHONE_NUMBER`, `MEMBER_MOBILE_PHONE_NUMBER`, `MEMBER_FAX_NUMBER`, `MEMBER_EMAIL`, `MEMBER_LINE_ID`, `MEMBER_FACEBOOK_ID`, `MEMBER_WEIGHT`, `MEMBER_HEIGHT`, `MEMBER_WAISTLINE`, `MEMBER_BMI`, `MEMBER_SYSTOLIC_BLOOD_PRESSURE`, `MEMBER_DIASTOLIC_BLOOD_PRESSURE`, `MEMBER_FASTING_BLOOD_SUGAR`, `MEMBER_DISABLED_CARD`, `MEMBER_CREATED_DATE`, `MEMBER_LAST_EDITED_DATE`, `NAME_TITLE_ID`, `BIRTHPLACE_PROVINCE_ID`, `PERMANENT_ADDRESS_ID`, `CURRENT_ADDRESS_ID`, `NATIONALITY_ID`, `ETHNICITY_ID`, `RELIGION_ID`, `MEMBER_STATUS_ID`, `USER_ID`) VALUES( UNIX_TIMESTAMP()*1000 ,?,?,?,?,?,?,?,?,?,?, ?, ?, ?, ?, ?,?, ?, ?, ?,?,?, ?,'2012-09-12','2012-09-12', ?, ?, LAST_INSERT_ID()-1, LAST_INSERT_ID(),?,?,?,?,?)",[idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id,user_id], function (error, results, fields) {
 
           if (error) {
        
-            console.log(error);
+            // console.log(error);
 
-            res.json({ "results": { "status": "404" } });
+            res.json({ "results": { "status": "404",error } });
           }
           else {
-            //console.log("Insert Member Success");
+            // console.log("Insert Member Success");
           }
 
 
@@ -491,7 +614,7 @@ app.post('/insert_member', async (req, res) => {
 
 
           if (error) {
-            console.log(error);
+            // console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -503,13 +626,13 @@ app.post('/insert_member', async (req, res) => {
 
       /////////////////////informationContact/////////////////////////////
 
-        let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
+        // let sql_temp_contact = "INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES('" + contact_first_name + "', '" + contact_last_name + "', '" + contact_phone_number + "', '" + contact_mobile_phone_number + "', '" + contact_fax_number + "', '" + contact_email + "', '" + contact_line_id + "', '" + contact_facebook_id + "', '" + contact_name_title_id + "', LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER));"
 
 
         db.query("INSERT INTO ICE_CONTACT(ICE_CONTACT_FIRST_NAME, ICE_CONTACT_LAST_NAME, ICE_CONTACT_PHONE_NUMBER, ICE_CONTACT_MOBILE_PHONE_NUMBER, ICE_CONTACT_FAX_NUMBER, ICE_CONTACT_EMAIL, ICE_CONTACT_LINE_ID, ICE_CONTACT_FACEBOOK_ID, NAME_TITLE_ID, ADDRESS_ID, MEMBER_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ? , LAST_INSERT_ID(), (SELECT MAX(MEMBER.MEMBER_ID) FROM MEMBER))",[contact_first_name,contact_last_name,contact_phone_number,contact_mobile_phone_number,contact_fax_number,contact_email,contact_line_id,contact_facebook_id,contact_name_title_id], function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+            // console.log(error);
 
             res.json({ "results": { "status": "404" } });
           }
@@ -523,7 +646,7 @@ app.post('/insert_member', async (req, res) => {
         db.query("SELECT MAX(MEMBER.MEMBER_ID) AS ID FROM MEMBER", function (error, results, fields) {
 
           if (error) {
-            console.log(error);
+            // console.log(error);
             res.json({ "results": { "status": "404" } });
           }
           else {
@@ -1280,38 +1403,9 @@ app.post('/update_member', (req, res) => {
   const disabled_card = informationBody.disabledCard;
   const status_id = informationBody.memberStatus;
 
-
-  var data = {
-    "MEMBER_IDENTIFICATION_NUMBER": idcard,
-    "MEMBER_FIRST_NAME": firstname,
-    "MEMBER_LAST_NAME": lastname,
-    "MEMBER_IMAGE": image,
-    "MEMBER_BIRTH_DATE": birthday,
-    "MEMBER_ISSUE_BY": issueby,
-    "MEMBER_ISSUE_DATE": issuedate,
-    "MEMBER_EXPIRY_DATE": expiry,
-    "MEMBER_PHONE_NUMBER": phonenumber,
-    "MEMBER_MOBILE_PHONE_NUMBER": mobilephonenumber,
-    "MEMBER_FAX_NUMBER": faxnumber,
-    "MEMBER_EMAIL": email,
-    "MEMBER_LINE_ID": line,
-    "MEMBER_FACEBOOK_ID": facebook,
-    "MEMBER_WEIGHT": weight,
-    "MEMBER_HEIGHT": height,
-    "MEMBER_WAISTLINE": waistline,
-    "MEMBER_BMI": bmi,
-    "MEMBER_SYSTOLIC_BLOOD_PRESSURE": systolic_blood,
-    "MEMBER_DIASTOLIC_BLOOD_PRESSURE": diastolic_blood,
-    "MEMBER_FASTING_BLOOD_SUGAR": fasting_sugar,
-    "MEMBER_DISABLED_CARD": disabled_card,
-    "NAME_TITLE_ID": title_id,
-    "BIRTHPLACE_PROVINCE_ID": province,
-    "NATIONALITY_ID": nationality,
-    "ETHNICITY_ID": ethnicity,
-    "RELIGION_ID": religion,
-    "MEMBER_STATUS_ID": status_id
-  };
-
+// [idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id]
+  
+  
   // var data  = "\"MEMBER_IDENTIFICATION_NUMBER\"=\""+idcard+"\","+
   //   "\"MEMBER_FIRST_NAME\"=\""+firstname+"\","+
   //   "\"MEMBER_LAST_NAME\"=\""+lastname+"\","+
@@ -1344,8 +1438,44 @@ app.post('/update_member', (req, res) => {
 
   // res.json({data});
 
+  // db.query("UPDATE `MEMBER`(`MEMBER_ID`, `MEMBER_IDENTIFICATION_NUMBER`, `MEMBER_FIRST_NAME`, `MEMBER_LAST_NAME`, `MEMBER_IMAGE`, `MEMBER_BIRTH_DATE`, `MEMBER_ISSUE_BY`, `MEMBER_ISSUE_DATE`, `MEMBER_EXPIRY_DATE`, `MEMBER_PHONE_NUMBER`, `MEMBER_MOBILE_PHONE_NUMBER`, `MEMBER_FAX_NUMBER`, `MEMBER_EMAIL`, `MEMBER_LINE_ID`, `MEMBER_FACEBOOK_ID`, `MEMBER_WEIGHT`, `MEMBER_HEIGHT`, `MEMBER_WAISTLINE`, `MEMBER_BMI`, `MEMBER_SYSTOLIC_BLOOD_PRESSURE`, `MEMBER_DIASTOLIC_BLOOD_PRESSURE`, `MEMBER_FASTING_BLOOD_SUGAR`, `MEMBER_DISABLED_CARD`, `MEMBER_CREATED_DATE`, `MEMBER_LAST_EDITED_DATE`, `NAME_TITLE_ID`, `BIRTHPLACE_PROVINCE_ID`, `PERMANENT_ADDRESS_ID`, `CURRENT_ADDRESS_ID`, `NATIONALITY_ID`, `ETHNICITY_ID`, `RELIGION_ID`, `MEMBER_STATUS_ID`, `USER_ID`) VALUES( UNIX_TIMESTAMP()*1000 ,?,?,?,?,?,?,?,?,?,?, ?, ?, ?, ?, ?,?, ?, ?, ?,?,?, ?,'2012-09-12','2012-09-12', ?, ?, LAST_INSERT_ID()-1, LAST_INSERT_ID(),?,?,?,?,?) WHERE MEMBER.MEMBER_ID = ?",[idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id,user_id], function (error, results, fields) {
 
-  db.query("UPDATE `MEMBER` SET ? WHERE MEMBER.MEMBER_ID = ?", [data, member_id], function (error, results, fields) {
+
+
+    var data = {
+      "MEMBER_IDENTIFICATION_NUMBER": idcard,
+      "MEMBER_FIRST_NAME": firstname,
+      "MEMBER_LAST_NAME": lastname,
+      "MEMBER_IMAGE": image,
+      "MEMBER_BIRTH_DATE": birthday,
+      "MEMBER_ISSUE_BY": issueby,
+      "MEMBER_ISSUE_DATE": issuedate,
+      "MEMBER_EXPIRY_DATE": expiry,
+      "MEMBER_PHONE_NUMBER": phonenumber,
+      "MEMBER_MOBILE_PHONE_NUMBER": mobilephonenumber,
+      "MEMBER_FAX_NUMBER": faxnumber,
+      "MEMBER_EMAIL": email,
+      "MEMBER_LINE_ID": line,
+      "MEMBER_FACEBOOK_ID": facebook,
+      "MEMBER_WEIGHT": weight,
+      "MEMBER_HEIGHT": height,
+      "MEMBER_WAISTLINE": waistline,
+      "MEMBER_BMI": bmi,
+      "MEMBER_SYSTOLIC_BLOOD_PRESSURE": systolic_blood,
+      "MEMBER_DIASTOLIC_BLOOD_PRESSURE": diastolic_blood,
+      "MEMBER_FASTING_BLOOD_SUGAR": fasting_sugar,
+      "MEMBER_DISABLED_CARD": disabled_card,
+      "NAME_TITLE_ID": title_id,
+      "BIRTHPLACE_PROVINCE_ID": province,
+      "NATIONALITY_ID": nationality,
+      "ETHNICITY_ID": ethnicity,
+      "RELIGION_ID": religion,
+      "MEMBER_STATUS_ID": status_id
+    };
+
+    db.query("UPDATE `MEMBER` SET `MEMBER_IDENTIFICATION_NUMBER`=?,`MEMBER_FIRST_NAME`=?,`MEMBER_LAST_NAME`=?,`MEMBER_IMAGE`=?,`MEMBER_BIRTH_DATE`=?,`MEMBER_ISSUE_BY`=?,`MEMBER_ISSUE_DATE`=?,`MEMBER_EXPIRY_DATE`=?,`MEMBER_PHONE_NUMBER`=?,`MEMBER_MOBILE_PHONE_NUMBER`=?,`MEMBER_FAX_NUMBER`=?,`MEMBER_EMAIL`=?,`MEMBER_LINE_ID`=?,`MEMBER_FACEBOOK_ID`=?,`MEMBER_WEIGHT`=?,`MEMBER_HEIGHT`=?,`MEMBER_WAISTLINE`=?,`MEMBER_BMI`=?,`MEMBER_SYSTOLIC_BLOOD_PRESSURE`=?,`MEMBER_DIASTOLIC_BLOOD_PRESSURE`=?,`MEMBER_FASTING_BLOOD_SUGAR`=?,`MEMBER_DISABLED_CARD`=?,`MEMBER_LAST_EDITED_DATE`=NOW(),`NAME_TITLE_ID`=?,`BIRTHPLACE_PROVINCE_ID`=?,`NATIONALITY_ID`=?,`ETHNICITY_ID`=?,`RELIGION_ID`=?,`MEMBER_STATUS_ID`=? WHERE MEMBER.MEMBER_ID = ?", [idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id, member_id], function (error, results, fields) {
+  
+    // db.query("UPDATE `MEMBER` SET ? WHERE MEMBER.MEMBER_ID = ?", [data, member_id], function (error, results, fields) {
 
     if (error) {
       // console.log(error);
@@ -1404,8 +1534,8 @@ app.post('/update_member', (req, res) => {
   const current_address_street = currentAddressMember.road;
   const current_address_locality = currentAddressMember.houseNumber;
   const current_address_postal_code = currentAddressMember.postCode;
-  const current_address_latitude = 1;
-  const current_address_longitude = 1;
+  const current_address_latitude = currentAddressMember.latitude;
+  const current_address_longitude = currentAddressMember.longitude;
   const current_subdistrict_id = currentAddressMember.subDistrict;
   const current_address_status_id = 2;
 
@@ -1701,7 +1831,7 @@ app.post('/get_disability', (req, res) => {
 
 
 //////////////INSERT HEALTH_SCREENING ///////////////////
-app.post('/get_health_screening', (req, res) => {
+app.post('/insert_health_screening', (req, res) => {
   let member_id = req.body.member_id;
   let temp_data = {
     "MEMBER_ID":member_id
@@ -1718,7 +1848,7 @@ app.post('/get_health_screening', (req, res) => {
 
   let health_screening_has_choice = req.body.health_screening_has_choice;
  
-  db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , (SELECT HEALTH_SCREENING.HEALTH_SCREENING_ID FROM `HEALTH_SCREENING` WHERE HEALTH_SCREENING.MEMBER_ID = ? ), ? )', [health_screening_has_choice.health_screening_has_choice_detail , health_screening_has_choice.health_screening_has_choice_correct , member_id , health_screening_has_choice.health_screening_choice_id], function (error, results, fields) {
+  db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , (SELECT MAX(HEALTH_SCREENING.HEALTH_SCREENING_ID) FROM `HEALTH_SCREENING` WHERE HEALTH_SCREENING.MEMBER_ID = ? ), ? )', [health_screening_has_choice.health_screening_has_choice_detail , health_screening_has_choice.health_screening_has_choice_correct , member_id , health_screening_has_choice.health_screening_choice_id], function (error, results, fields) {
 
     if (error) {
       res.json({ "results": { "status": "404" } });
