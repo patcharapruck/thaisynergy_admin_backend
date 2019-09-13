@@ -7,13 +7,13 @@
 ## Getting Started
 **1. ดาวน์โหลด source code ของระบบ**
 ```sh
-git clone https://gitlab.co.th/folder_name.git
+git clone https://gitlab.spinsoft.co.th/web/thaisynergy_admin_backend.git
 ```
 
 **2. เปิดโฟลเดอร์ของระบบที่ได้ clone ลงมาเรียบร้อยแล้ว**
 
 ```sh
-cd nodejs
+cd thaisynergy_admin_backend
 ```
 
 **3. เริ่มต้นใช้งานสำหรับ production**
