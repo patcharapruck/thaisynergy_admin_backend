@@ -136,7 +136,7 @@ app.post('/user_login', async (req, res) => {
 
 /////////// General Data ///////////////
 app.get('/get_prefix', (req, res) => {
-  db.query('SELECT * FROM `NAME_TITLE`', function (error, results, fields) {
+  db.query('SELECT * FROM `NAME_TITLE` ORDER BY `NAME_TITLE`.`NAME_TITLE_ID` ASC', function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -203,8 +203,12 @@ app.get('/get_religiion', (req, res) => {
   });
 });
 
-app.get('/get_member', (req, res) => {
-  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER, MEMBER.MEMBER_BIRTH_DATE FROM MEMBER', function (error, results, fields) {
+app.post('/get_member', (req, res) => {
+  // console.log(req.body);
+  let user_id= req.body.user_id;
+  
+  
+  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER, MEMBER.MEMBER_BIRTH_DATE FROM MEMBER  WHERE MEMBER.USER_ID = ?',user_id, function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -366,7 +370,8 @@ app.post('/insert_member', async (req, res) => {
 
         // console.log(user_id);
         
-
+        console.log(req.body.member);
+        
         const fetchData_member = req.body.member;
         const permanentAddressMember = fetchData_member.permanentAddressMember;
         const permanent_address_house_number = permanentAddressMember.houseNumber;
@@ -585,11 +590,11 @@ app.post('/insert_member', async (req, res) => {
         
         
         // , function (error, results, fields) {
-        db.query("INSERT INTO `MEMBER`(`MEMBER_ID`, `MEMBER_IDENTIFICATION_NUMBER`, `MEMBER_FIRST_NAME`, `MEMBER_LAST_NAME`, `MEMBER_IMAGE`, `MEMBER_BIRTH_DATE`, `MEMBER_ISSUE_BY`, `MEMBER_ISSUE_DATE`, `MEMBER_EXPIRY_DATE`, `MEMBER_PHONE_NUMBER`, `MEMBER_MOBILE_PHONE_NUMBER`, `MEMBER_FAX_NUMBER`, `MEMBER_EMAIL`, `MEMBER_LINE_ID`, `MEMBER_FACEBOOK_ID`, `MEMBER_WEIGHT`, `MEMBER_HEIGHT`, `MEMBER_WAISTLINE`, `MEMBER_BMI`, `MEMBER_SYSTOLIC_BLOOD_PRESSURE`, `MEMBER_DIASTOLIC_BLOOD_PRESSURE`, `MEMBER_FASTING_BLOOD_SUGAR`, `MEMBER_DISABLED_CARD`, `MEMBER_CREATED_DATE`, `MEMBER_LAST_EDITED_DATE`, `NAME_TITLE_ID`, `BIRTHPLACE_PROVINCE_ID`, `PERMANENT_ADDRESS_ID`, `CURRENT_ADDRESS_ID`, `NATIONALITY_ID`, `ETHNICITY_ID`, `RELIGION_ID`, `MEMBER_STATUS_ID`, `USER_ID`) VALUES( UNIX_TIMESTAMP()*1000 ,?,?,?,?,?,?,?,?,?,?, ?, ?, ?, ?, ?,?, ?, ?, ?,?,?, ?,'2012-09-12','2012-09-12', ?, ?, LAST_INSERT_ID()-1, LAST_INSERT_ID(),?,?,?,?,?)",[idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id,user_id], function (error, results, fields) {
+        db.query("INSERT INTO `MEMBER`(`MEMBER_ID`, `MEMBER_IDENTIFICATION_NUMBER`, `MEMBER_FIRST_NAME`, `MEMBER_LAST_NAME`, `MEMBER_IMAGE`, `MEMBER_BIRTH_DATE`, `MEMBER_ISSUE_BY`, `MEMBER_ISSUE_DATE`, `MEMBER_EXPIRY_DATE`, `MEMBER_PHONE_NUMBER`, `MEMBER_MOBILE_PHONE_NUMBER`, `MEMBER_FAX_NUMBER`, `MEMBER_EMAIL`, `MEMBER_LINE_ID`, `MEMBER_FACEBOOK_ID`, `MEMBER_WEIGHT`, `MEMBER_HEIGHT`, `MEMBER_WAISTLINE`, `MEMBER_BMI`, `MEMBER_SYSTOLIC_BLOOD_PRESSURE`, `MEMBER_DIASTOLIC_BLOOD_PRESSURE`, `MEMBER_FASTING_BLOOD_SUGAR`, `MEMBER_DISABLED_CARD`, `MEMBER_CREATED_DATE`, `MEMBER_LAST_EDITED_DATE`, `NAME_TITLE_ID`, `BIRTHPLACE_PROVINCE_ID`, `PERMANENT_ADDRESS_ID`, `CURRENT_ADDRESS_ID`, `NATIONALITY_ID`, `ETHNICITY_ID`, `RELIGION_ID`, `MEMBER_STATUS_ID`, `USER_ID`) VALUES( UNIX_TIMESTAMP()*1000 ,?,?,?,?,?,?,?,?,?,?, ?, ?, ?, ?, ?,?, ?, ?, ?,?,?, ?,NOW(),NOW(), ?, ?, LAST_INSERT_ID()-1, LAST_INSERT_ID(),?,?,?,?,?)",[idcard,firstname,lastname,image,birthday,issueby,issuedate,expiry,phonenumber,mobilephonenumber,faxnumber,email,line,facebook,weight,height,waistline,bmi,systolic_blood,diastolic_blood,fasting_sugar,disabled_card,title_id,province,nationality,ethnicity,religion,status_id,user_id], function (error, results, fields) {
 
           if (error) {
        
-            // console.log(error);
+            console.log(error);
 
             res.json({ "results": { "status": "404",error } });
           }
@@ -881,7 +886,7 @@ app.post('/insert_member', async (req, res) => {
 });
 
 app.post('/delete_member', (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   const member_id = req.body.member_id;
   //console.log(member_id);
 
@@ -913,7 +918,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `EQUIPMENT` WHERE EQUIPMENT.MEMBER_ID =" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -925,7 +930,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `CARETAKER` WHERE CARETAKER.MEMBER_ID =" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -937,7 +942,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `MEDICAL_CARE` WHERE MEDICAL_CARE.MEMBER_ID=" + member_id + "", function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -949,7 +954,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM MEMBER_HAS_DISABILITY WHERE MEMBER_HAS_DISABILITY.MEMBER_ID = ? ", member_id, function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -961,7 +966,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM MEMBER_HAS_RESIDENCE WHERE MEMBER_HAS_RESIDENCE.MEMBER_ID= ? ", member_id, function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -975,7 +980,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = " + member_id + ")", function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -987,7 +992,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = " + member_id + ")", function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -999,7 +1004,7 @@ app.post('/delete_member', (req, res) => {
   db.query("DELETE FROM `MEMBER` WHERE MEMBER.MEMBER_ID=" + member_id, function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -1387,12 +1392,14 @@ app.post('/update_member', (req, res) => {
 
   ////////// phoneContactMember ///////////
   const phoneContactMember = fetchData_member.phoneContactMember;
+  // console.log(phoneContactMember);
+  
   const phonenumber = phoneContactMember.telNumber;
   const mobilephonenumber = phoneContactMember.phoneNumber;
   const faxnumber = phoneContactMember.faxNumber;
   const email = phoneContactMember.email;
-  const line = phoneContactMember.line;
-  const facebook = phoneContactMember.facebook;
+  const line = phoneContactMember.lineId;
+  const facebook = phoneContactMember.facebookId;
 
 
   ////////// informationBody ///////////
@@ -1838,30 +1845,33 @@ app.post('/get_disability', (req, res) => {
 app.post('/insert_health_screening',async (req, res) => {
   let member_id = req.body.member_id;
 
-
-  let id_health_screening = await insert_health_screening(member_id);
-  console.log(id_health_screening);
-  
+  let id_health_screening_adl_evaluation = await insert_health_screening(member_id);
+  // console.log(id_health_screening);
   let health_screening_has_choice = req.body.health_screening_has_choice;
-
   for (let index = 0; index < health_screening_has_choice.length; index++) {
-    
-    console.log(index);
-    db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , ?, ? )', [health_screening_has_choice[index].health_screening_has_choice_detail , health_screening_has_choice[index].health_screening_has_choice_correct , id_health_screening , health_screening_has_choice[index].health_screening_choice_id], function (error, results, fields) {
-
+    db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_AND_ADL_EVALUATION_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , ?, ? )', [health_screening_has_choice[index].health_screening_has_choice_detail , health_screening_has_choice[index].health_screening_has_choice_correct , id_health_screening_adl_evaluation , health_screening_has_choice[index].health_screening_choice_id], function (error, results, fields) {
       if (error) {
-        console.log(error);
+        // console.log(error);
         
         res.json({ "results": { "status": "404" } });
       }
-      else {
-          // res.json({ "results": { "status": 200}});
+    });
+  }
+
+
+  let health_screening_sub_choice = req.body.health_screening_sub_choice;
+  for (let index2 = 0; index2 < health_screening_sub_choice.length; index2++) {
+    db.query("INSERT INTO HEALTH_SCREENING_HAS_SUB_CHOICE(HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL, HEALTH_SCREENING_AND_ADL_EVALUATION_ID, HEALTH_SCREENING_SUB_CHOICE_ID) VALUES(?, ?, ?)",[health_screening_sub_choice[index2].health_screening_has_sub_choice_detail,id_health_screening_adl_evaluation,health_screening_sub_choice[index2].health_screening_sub_choice_id], function (error, results, fields) {
+      // console.log(index2);
+      
+      if (error) {
+        // console.log(error);
+        res.json({ "results": { "status": "404" } });
       }
     });
-    
   }
  
- res.json({ "results": { "status": 200}});
+ res.json({ "results": { "status": 200 ,"data":{"id":id_health_screening_adl_evaluation}}});
 
 
 });
@@ -1870,14 +1880,12 @@ async function insert_health_screening(id) {
   return new Promise(resolve => {
     setTimeout(() => {
 
-      let temp_data = {
-        "MEMBER_ID":id
-      }
-      db.query('INSERT INTO HEALTH_SCREENING SET ?', temp_data, function (error, results, fields) {
+      // let temp_data = {
+      //   "MEMBER_ID":id
+      // }
+      db.query('INSERT INTO `HEALTH_SCREENING_AND_ADL_EVALUATION`( `HEALTH_SCREENING_AND_ADL_EVALUATION_DATE`, `MEMBER_ID`) VALUES (NOW(),?)', id, function (error, results, fields) {
         if (error) {
-          console.log(error);
-          
-          resolve({ "results": { "status": "404","massage":"cannot insert health screening" } });
+          resolve({ "results": { "status": "404","massage":error } });
         }
       });
 
@@ -1888,5 +1896,136 @@ async function insert_health_screening(id) {
     }, 250);
   });
 }
+
+
+
+
+//////////////INSERT ADL EVALUATION ///////////////////
+app.post('/insert_adl_evaluation',async (req, res) => {
+  let id = req.body.id_health_screening_adl_evaluation;
+  let adl_evaluation = req.body.adl_evaluation;
+  for (let index = 0; index < adl_evaluation.length; index++) {
+    db.query('INSERT INTO ADL_EVALUATION_HAS_CHOICE(HEALTH_SCREENING_AND_ADL_EVALUATION_ID, ADL_CHOICE_ID)  VALUES(?, ?)', [  id , adl_evaluation[index].adl_choice_id], function (error, results, fields) {
+      if (error) {
+        res.json({ "results": { "status": "404" } });
+      }
+    });
+  }
+ 
+ res.json({ "results": { "status": 200}});
+
+});
+
+
+
+
+
+//////////////UPDATE HEALTH_SCREENING ///////////////////
+app.post('/update_health_screening',async (req, res) => {
+
+  // let id_health_screening_adl_evaluation = req.body.id_health_screening_adl_evaluation;
+
+  let health_screening_has_choice = req.body.health_screening_has_choice;
+  for (let index = 0; index < health_screening_has_choice.length; index++) {
+
+    let data_temp = {
+      "HEALTH_SCREENING_HAS_CHOICE_DETAIL":health_screening_has_choice[index].health_screening_has_choice_detail,
+      "HEALTH_SCREENING_HAS_CHOICE_CORRECT":health_screening_has_choice[index].health_screening_has_choice_correct,
+      "HEALTH_SCREENING_CHOICE_ID":health_screening_has_choice[index].health_screening_choice_id
+    }
+
+    db.query(' UPDATE `HEALTH_SCREENING_HAS_CHOICE` SET ? WHERE HEALTH_SCREENING_HAS_CHOICE_ID = ?', [ data_temp, health_screening_has_choice[index].health_screening_has_choice_id], function (error, results, fields) {
+      if (error) {
+        res.json({ "results": { "status": "404" } });
+      }
+    });
+  }
+
+
+  let health_screening_sub_choice = req.body.health_screening_sub_choice;
+  for (let index2 = 0; index2 < health_screening_sub_choice.length; index2++) {
+    let data_temp2 = {
+      "HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL":health_screening_sub_choice[index2].health_screening_has_sub_choice_detail,
+      "HEALTH_SCREENING_SUB_CHOICE_ID":health_screening_sub_choice[index2].health_screening_sub_choice_id
+    };
+    db.query("UPDATE `HEALTH_SCREENING_HAS_SUB_CHOICE` SET ? WHERE HEALTH_SCREENING_HAS_SUB_CHOICE.HEALTH_SCREENING_HAS_SUB_CHOICE_ID = ?",[data_temp2,health_screening_sub_choice[index2].health_screening_has_sub_choice_id], function (error, results, fields) {
+      if (error) {
+        res.json({ "results": { "status": "404" } });
+      }
+    });
+  }
+ 
+ res.json({ "results": { "status": 200 }});
+
+
+});
+
+
+app.post('/get_health_screening_choice', (req, res) => {
+  let health_screening_and_adl_evaluation_id = req.body.id;
+
+  db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',health_screening_and_adl_evaluation_id, function (error, results, fields) {
+    //console.log(results);
+
+    res.json({ results });
+  });
+});
+
+
+
+app.post('/get_health_service_by_member_id', (req, res) => {
+  let member_id = req.body.member_id;
+
+  db.query('SELECT HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_ID,HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_DATE,MEMBER.MEMBER_IDENTIFICATION_NUMBER,CONCAT(MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) as FULLNAME,MEMBER.MEMBER_BIRTH_DATE FROM HEALTH_SCREENING_AND_ADL_EVALUATION,MEMBER,USER WHERE HEALTH_SCREENING_AND_ADL_EVALUATION.MEMBER_ID = MEMBER.MEMBER_ID AND MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
+    //console.log(results);
+
+    res.json({ results });
+  });
+});
+
+
+
+
+app.post('/get_health_screening_has_choice_byid', async (req, res) => {
+  let health_screening_and_adl_evaluation_id = req.body.id;
+
+  let get_health_screening_data = await get_health_screening(health_screening_and_adl_evaluation_id)
+  let get_adl_data = await get_adl_screening(health_screening_and_adl_evaluation_id)
+  // console.log(get_health_screening_data);
+  
+  // db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',health_screening_and_adl_evaluation_id, function (error, results, fields) {
+  //   //console.log(results);
+
+    res.json({ "status":200,"data":{"health_screening":get_health_screening_data,"adl_screening":get_adl_data} });
+  // });
+});
+
+
+async function get_health_screening(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',id, function (error, results, fields) {
+        resolve(results);
+      });
+    }, 250);
+  });
+}
+
+async function get_adl_screening(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT * FROM `ADL_EVALUATION_HAS_CHOICE` WHERE ADL_EVALUATION_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID = ? ',id, function (error, results, fields) {
+        resolve(results);
+      });
+    }, 250);
+  });
+}
+
+
+
+
+
 
 
