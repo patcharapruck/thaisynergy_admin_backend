@@ -116,13 +116,13 @@ app.post('/user_login', async (req, res) => {
   let password = fetch_login.password;
   
 
-    db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname FROM `LOGIN` WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?)",[username,username,password], function (error, results, fields) {
+    db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as USER_ID FROM `LOGIN` WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?)",[username,username,password], function (error, results, fields) {
       if (error) {
         res.json({ "results": { "status": "404" } });
       }
       else {
         if (results[0].count_user>=1) {
-          res.json({ "results": { "status": "200","data": { "user_id":results[0].LOGIN_ID,"fullname":results[0].fullname}} });
+          res.json({ "results": { "status": "200","data": { "user_id":results[0].USER_ID,"fullname":results[0].fullname}} });
         }
         else{
           res.json({ "results": { "status": "204","data": "Username Or Password Not found"} });
@@ -357,12 +357,16 @@ async function get_rights_information_caretaker(id) {
 /////////// insert member ///////////////
 app.post('/insert_member', async (req, res) => {
 
-  console.log(req.body);
+  // console.log(req.body);
   
 
   try {
 
         const user_id = req.body.user_id;
+
+        // console.log(user_id);
+        
+
         const fetchData_member = req.body.member;
         const permanentAddressMember = fetchData_member.permanentAddressMember;
         const permanent_address_house_number = permanentAddressMember.houseNumber;
@@ -1831,34 +1835,58 @@ app.post('/get_disability', (req, res) => {
 
 
 //////////////INSERT HEALTH_SCREENING ///////////////////
-app.post('/insert_health_screening', (req, res) => {
+app.post('/insert_health_screening',async (req, res) => {
   let member_id = req.body.member_id;
-  let temp_data = {
-    "MEMBER_ID":member_id
-  }
-  db.query('INSERT INTO HEALTH_SCREENING SET ?', temp_data, function (error, results, fields) {
 
-    if (error) {
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-        // res.json({ "results": { "status": 200}});
-    }
-  });
 
+  let id_health_screening = await insert_health_screening(member_id);
+  console.log(id_health_screening);
+  
   let health_screening_has_choice = req.body.health_screening_has_choice;
- 
-  db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , (SELECT MAX(HEALTH_SCREENING.HEALTH_SCREENING_ID) FROM `HEALTH_SCREENING` WHERE HEALTH_SCREENING.MEMBER_ID = ? ), ? )', [health_screening_has_choice.health_screening_has_choice_detail , health_screening_has_choice.health_screening_has_choice_correct , member_id , health_screening_has_choice.health_screening_choice_id], function (error, results, fields) {
 
-    if (error) {
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-        // res.json({ "results": { "status": 200}});
-    }
-  });
+  for (let index = 0; index < health_screening_has_choice.length; index++) {
+    
+    console.log(index);
+    db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , ?, ? )', [health_screening_has_choice[index].health_screening_has_choice_detail , health_screening_has_choice[index].health_screening_has_choice_correct , id_health_screening , health_screening_has_choice[index].health_screening_choice_id], function (error, results, fields) {
+
+      if (error) {
+        console.log(error);
+        
+        res.json({ "results": { "status": "404" } });
+      }
+      else {
+          // res.json({ "results": { "status": 200}});
+      }
+    });
+    
+  }
+ 
+ res.json({ "results": { "status": 200}});
 
 
 });
+
+async function insert_health_screening(id) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+
+      let temp_data = {
+        "MEMBER_ID":id
+      }
+      db.query('INSERT INTO HEALTH_SCREENING SET ?', temp_data, function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          
+          resolve({ "results": { "status": "404","massage":"cannot insert health screening" } });
+        }
+      });
+
+      db.query('SELECT LAST_INSERT_ID() AS id', function (error, results, fields) {
+        resolve(results[0].id);
+      });
+
+    }, 250);
+  });
+}
 
 
