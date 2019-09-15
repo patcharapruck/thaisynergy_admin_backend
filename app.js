@@ -203,12 +203,39 @@ app.get('/get_religiion', (req, res) => {
   });
 });
 
+app.get('/get_member_all', (req, res) => {
+  console.log("asdasdasdasd");
+
+  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER,  DATE_FORMAT(MEMBER.MEMBER_BIRTH_DATE, "%d/%m/%Y") AS MEMBER_BIRTH_DATE FROM MEMBER', function (error, results, fields) {
+    console.log(results);
+
+    res.json({ "results":{"status":200,"data":results} });
+  });
+});
+
+app.post('/get_member_info_for_health_service', (req, res) => {
+  // console.log(req.body);
+  let member_id= req.body.member_id;
+  console.log(req.body);
+  
+  db.query('SELECT MEMBER.MEMBER_ID,MEMBER.MEMBER_IDENTIFICATION_NUMBER,CONCAT(MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS FULLNAME, CONVERT(MEMBER.MEMBER_BIRTH_DATE,char(255)) as MEMBER_BIRTH_DATE  FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
+    if (error) {
+      // console.log(error);
+      
+    }
+    console.log(results);
+    
+    res.json(results);
+  });
+
+});
+
 app.post('/get_member', (req, res) => {
   // console.log(req.body);
   let user_id= req.body.user_id;
   
   
-  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER, MEMBER.MEMBER_BIRTH_DATE FROM MEMBER  WHERE MEMBER.USER_ID = ?',user_id, function (error, results, fields) {
+  db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER, DATE_FORMAT(MEMBER.MEMBER_BIRTH_DATE, "%d/%m/%Y") AS MEMBER_BIRTH_DATE FROM MEMBER  WHERE MEMBER.USER_ID = ?',user_id, function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -228,6 +255,7 @@ app.post('/get_member_byid',async (req, res) => {
   // console.log(addr_current);
   let ice_contact = await get_data_ice_contact(member_id);
   // console.log(ice_contact);
+  
   let addr_addr_permanent = await get_data_addr_ice_contact(member_id);
   res.json({ "results": { "status": "200" ,"data":{"member_info":member_info,"permanent_address":addr_permanent,"current_address":addr_current,"ice_contact":ice_contact,"ice_contact_address":addr_addr_permanent} }});
 
@@ -253,13 +281,19 @@ async function get_data_addr_permanent(id) {
   
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?) AND ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
         // return results[0];
         if (error) {
           // console.log(error);
           
         }
-        resolve(results[0]);
+       
+        else{
+          resolve(results[0]);
+        }
+        
+        
+        
       });
     }, 250);
   });
@@ -268,12 +302,16 @@ async function get_data_addr_permanent(id) {
 async function get_data_addr_current(id) {
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?) AND ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)',id, function (error, results, fields) {
         if (error) {
           // console.log(error);
           
         }
-        resolve(results[0]);
+       
+        else{
+          resolve(results[0]);
+        }
+        // resolve(results[0]);
       });
     }, 250);
   });
@@ -297,12 +335,16 @@ async function get_data_addr_ice_contact(id) {
   
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT ADDRESS.*,DISTRICT.DISTRICT_ID,DISTRICT.PROVINCE_ID FROM ADDRESS,SUBDISTRICT,DISTRICT WHERE ADDRESS.SUBDISTRICT_ID = SUBDISTRICT.SUBDISTRICT_ID AND SUBDISTRICT.DISTRICT_ID = DISTRICT.DISTRICT_ID AND ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
+      db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)',id, function (error, results, fields) {
         if (error) {
           // console.log(error);
           
         }
-        resolve(results[0]);
+       
+        else{
+          resolve(results[0]);
+        }
+        // resolve(results[0]);
       });
     }, 250);
   });
@@ -312,6 +354,7 @@ async function get_data_addr_ice_contact(id) {
 
 ///////////// GET RIGHT INFOMATION///////////////
 app.post('/get_rights_information',async (req, res) => {
+  console.log(req.body.member_id);
   
   let member_id = req.body.member_id;
   let equipment = await get_rights_information_equipment(member_id);
@@ -319,7 +362,7 @@ app.post('/get_rights_information',async (req, res) => {
   let caretaker = await get_rights_information_caretaker(member_id);
 
   
-  res.json({ "results": { "status": "200" ,"equipment":equipment,"medical_care":medical_care,"caretaker":caretaker} });
+  res.json({ "results": { "status": "200" ,"data":{"equipment":equipment,"medical_care":medical_care,"caretaker":caretaker}} });
 
 });
 async function get_rights_information_equipment(id) {
@@ -1699,7 +1742,7 @@ app.get('/get_residence', (req, res) => {
 
 app.post('/get_has_residence', (req, res) => {
   let member_id = req.body.member_id;
-  db.query('SELECT * FROM `MEMBER_HAS_RESIDENCE` WHERE MEMBER_HAS_RESIDENCE.MEMBER_ID = ?',member_id, function (error, results, fields) {
+  db.query('SELECT MEMBER_HAS_RESIDENCE.*,RESIDENCE.RESIDENCE_INPUT_TYPE FROM MEMBER_HAS_RESIDENCE,RESIDENCE WHERE MEMBER_HAS_RESIDENCE.RESIDENCE_ID = RESIDENCE.RESIDENCE_ID AND MEMBER_HAS_RESIDENCE.MEMBER_ID = ?',member_id, function (error, results, fields) {
 
     if (error) {
       res.json({ "results": { "status": "404" } });
@@ -1814,7 +1857,7 @@ app.post('/insert_disability', (req, res) => {
 });
 
 //////////////get_disability///////////////////
-app.post('/get_disability', (req, res) => {
+app.post('/get_has_disability', (req, res) => {
   let member_id = req.body.member_id;
   db.query('SELECT DISABILITY.DISABILITY_TYPE_ID,MEMBER_HAS_DISABILITY.* FROM MEMBER_HAS_DISABILITY,DISABILITY WHERE MEMBER_HAS_DISABILITY.DISABILITY_ID = DISABILITY.DISABILITY_ID AND MEMBER_HAS_DISABILITY.MEMBER_ID = ? ', member_id, function (error, results, fields) {
 
@@ -1971,6 +2014,16 @@ app.post('/get_health_screening_choice', (req, res) => {
   });
 });
 
+app.post('/get_list_health_service_by_member_id', (req, res) => {
+  let member_id = req.body.member_id;
+
+  db.query('SELECT HEALTH_SCREENING_AND_ADL_EVALUATION.*,(SELECT SUM(ADL_CHOICE.ADL_CHOICE_SCORE) FROM ADL_EVALUATION_HAS_CHOICE,ADL_CHOICE WHERE ADL_CHOICE.ADL_CHOICE_ID = ADL_EVALUATION_HAS_CHOICE.ADL_CHOICE_ID AND ADL_EVALUATION_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID = HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_ID) AS SCORE , IF((SELECT SUM(ADL_CHOICE.ADL_CHOICE_SCORE) FROM ADL_EVALUATION_HAS_CHOICE,ADL_CHOICE WHERE ADL_CHOICE.ADL_CHOICE_ID = ADL_EVALUATION_HAS_CHOICE.ADL_CHOICE_ID AND ADL_EVALUATION_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID = HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_ID)<5,"(3) ผู้สูงอายุกลุ่มที่พึ่งตนเองไม่ได้",IF((SELECT SUM(ADL_CHOICE.ADL_CHOICE_SCORE) FROM ADL_EVALUATION_HAS_CHOICE,ADL_CHOICE WHERE ADL_CHOICE.ADL_CHOICE_ID = ADL_EVALUATION_HAS_CHOICE.ADL_CHOICE_ID AND ADL_EVALUATION_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID = HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_ID)<12,"(2) ผู้สูงอายุที่ดูแลตนเองได้บ้าง","(1) ผู้สูงอายุที่พึ่งตนเองได้")) AS ADL_GROUP FROM `HEALTH_SCREENING_AND_ADL_EVALUATION` WHERE HEALTH_SCREENING_AND_ADL_EVALUATION.MEMBER_ID = ?',member_id, function (error, results, fields) {
+    //console.log(results);
+    
+    res.json({ "results":{"status":200,"data":results} });
+  });
+});
+
 
 
 app.post('/get_health_service_by_member_id', (req, res) => {
@@ -1978,8 +2031,8 @@ app.post('/get_health_service_by_member_id', (req, res) => {
 
   db.query('SELECT HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_ID,HEALTH_SCREENING_AND_ADL_EVALUATION.HEALTH_SCREENING_AND_ADL_EVALUATION_DATE,MEMBER.MEMBER_IDENTIFICATION_NUMBER,CONCAT(MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) as FULLNAME,MEMBER.MEMBER_BIRTH_DATE FROM HEALTH_SCREENING_AND_ADL_EVALUATION,MEMBER,USER WHERE HEALTH_SCREENING_AND_ADL_EVALUATION.MEMBER_ID = MEMBER.MEMBER_ID AND MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
     //console.log(results);
-
-    res.json({ results });
+    
+    res.json({ "results":{"status":200,"data":results} });
   });
 });
 
@@ -2024,8 +2077,95 @@ async function get_adl_screening(id) {
 }
 
 
+app.post('/insert_medical_checkup', async (req, res) => {
+
+  console.log(req.body);
+  
+  let member_id = req.body.member_id;
+
+  let fetch_medical_checkup_date = req.body.medical_checkup
+
+  let medical_checkup_id = fetch_medical_checkup_date.medical_checkup_id;
+  let medical_checkup_date = fetch_medical_checkup_date.medical_checkup_date;
+  let medical_checkup_weight = fetch_medical_checkup_date.medical_checkup_weight;
+  let medical_checkup_height = fetch_medical_checkup_date.medical_checkup_height;
+  let medical_checkup_bmi = fetch_medical_checkup_date.medical_checkup_bmi;
+  let medical_checkup_sbp = fetch_medical_checkup_date.medical_checkup_sbp;
+  let medical_checkup_dbp = fetch_medical_checkup_date.medical_checkup_dbp;
+  let medical_checkup_fbs = fetch_medical_checkup_date.medical_checkup_fbs;
+
+  // res.json({fetch_medical_checkup_date});
+
+  let json_data={
+    "MEDICAL_CHECKUP_ID":medical_checkup_id,
+    "MEDICAL_CHECKUP_DATE":medical_checkup_date,
+    "MEDICAL_CHECKUP_WEIGHT":medical_checkup_weight,
+    "MEDICAL_CHECKUP_HEIGHT":medical_checkup_height,
+    "MEDICAL_CHECKUP_BMI":medical_checkup_bmi,
+    "MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE":medical_checkup_sbp,
+    "MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE":medical_checkup_dbp,
+    "MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR":medical_checkup_fbs,
+    "MEMBER_ID":member_id
+  }
+
+  let json_data2={
+    "MEDICAL_CHECKUP_DATE":medical_checkup_date,
+    "MEDICAL_CHECKUP_WEIGHT":medical_checkup_weight,
+    "MEDICAL_CHECKUP_HEIGHT":medical_checkup_height,
+    "MEDICAL_CHECKUP_BMI":medical_checkup_bmi,
+    "MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE":medical_checkup_sbp,
+    "MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE":medical_checkup_dbp,
+    "MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR":medical_checkup_fbs,
+    
+  }
+
+  db.query('INSERT INTO MEDICAL_CHECKUP SET ? ON DUPLICATE KEY UPDATE ?',[json_data,json_data2], function (error, results, fields) {
+  // db.query('INSERT INTO MEDICAL_CHECKUP(MEDICAL_CHECKUP_DATE, MEDICAL_CHECKUP_WEIGHT, MEDICAL_CHECKUP_HEIGHT, MEDICAL_CHECKUP_BMI, MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE, MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE, MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR, MEMBER_ID) VALUES(?, ?, ?, ?, ?, ?, ?, ?)',[medical_checkup_date,medical_checkup_weight,medical_checkup_height,medical_checkup_bmi,medical_checkup_sbp,medical_checkup_dbp,medical_checkup_fbs,member_id], function (error, results, fields) {
+    //console.log(results);
+    if (error) {
+      console.log(error);
+      res.json({ "status":404 });
+    }
+    else{
+      res.json({ "status":200 });
+    }
+  });
+});
 
 
+app.post('/get_medical_checkup_by_member_id', async (req, res) => {
+
+  // console.log(req.body);
+  
+  let member_id = req.body.member_id;
+
+  db.query('SELECT MEDICAL_CHECKUP.*,IF(MEDICAL_CHECKUP.MEDICAL_CHECKUP_BMI<18,"ผอมเกินไป",IF(MEDICAL_CHECKUP.MEDICAL_CHECKUP_BMI<30,"ปกติ","อ้วนเกินไป")) as NOTE,DATE_FORMAT(MEDICAL_CHECKUP.MEDICAL_CHECKUP_DATE, "%d/%m/%Y") AS DATE_CHECKUP FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEMBER_ID = ?',member_id, function (error, results, fields) {
+ 
+    if (error) {
+      console.log(error);
+      res.json({ "status":404 });
+    }
+    else{
+      res.json({"results":{ "status":200 ,"data":results}});
+    }
+  });
+});
 
 
+app.post('/get_medical_checkup_by_medical_id', async (req, res) => {
 
+  console.log(req.body);
+  
+  let medical_id = req.body.medical_checkup_id;
+
+  db.query('SELECT * FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEDICAL_CHECKUP_ID = ?',medical_id, function (error, results, fields) {
+ 
+    if (error) {
+      console.log(error);
+      res.json({ "status":404 });
+    }
+    else{
+      res.json({ "results":{ "status":200 ,"data":results[0]}});
+    }
+  });
+});
