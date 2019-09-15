@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Sep 15, 2019 at 06:09 AM
+-- Generation Time: Sep 15, 2019 at 05:41 PM
 -- Server version: 5.7.25
 -- PHP Version: 7.3.1
 
@@ -282,7 +282,55 @@ CREATE TABLE `ADL_EVALUATION_HAS_CHOICE` (
 
 INSERT INTO `ADL_EVALUATION_HAS_CHOICE` (`EVALUATION_HAS_CHOICE_ID`, `HEALTH_SCREENING_AND_ADL_EVALUATION_ID`, `ADL_CHOICE_ID`) VALUES
 (1, 1, 1),
-(2, 1, 7);
+(2, 1, 4),
+(3, 1, 7),
+(4, 1, 10),
+(5, 1, 13),
+(6, 1, 18),
+(7, 1, 20),
+(8, 1, 24),
+(9, 1, 26),
+(10, 1, 29),
+(11, 2, 1),
+(12, 2, 4),
+(13, 2, 6),
+(14, 2, 10),
+(15, 2, 13),
+(16, 2, 17),
+(17, 2, 20),
+(18, 2, 23),
+(19, 2, 25),
+(20, 2, 28),
+(21, 3, 1),
+(22, 3, 4),
+(23, 3, 6),
+(24, 3, 10),
+(25, 3, 13),
+(26, 3, 17),
+(27, 3, 20),
+(28, 3, 24),
+(29, 3, 26),
+(30, 3, 29),
+(41, 4, 1),
+(42, 4, 4),
+(43, 4, 6),
+(44, 4, 10),
+(45, 4, 13),
+(46, 4, 17),
+(47, 4, 20),
+(48, 4, 23),
+(49, 4, 25),
+(50, 4, 28),
+(51, 5, 3),
+(52, 5, 5),
+(53, 5, 8),
+(54, 5, 11),
+(55, 5, 15),
+(56, 5, 18),
+(57, 5, 22),
+(58, 5, 24),
+(59, 5, 26),
+(60, 5, 30);
 
 -- --------------------------------------------------------
 
@@ -1715,7 +1763,11 @@ CREATE TABLE `HEALTH_SCREENING_AND_ADL_EVALUATION` (
 --
 
 INSERT INTO `HEALTH_SCREENING_AND_ADL_EVALUATION` (`HEALTH_SCREENING_AND_ADL_EVALUATION_ID`, `HEALTH_SCREENING_AND_ADL_EVALUATION_DATE`, `MEMBER_ID`) VALUES
-(1, '2019-09-15 10:34:05', 1568425951000);
+(1, '2019-09-15 23:04:00', 1568425951000),
+(2, '2019-09-15 23:05:04', 1568425951000),
+(3, '2019-09-15 23:06:52', 1568425951000),
+(4, '2019-09-15 23:09:59', 1568425951000),
+(5, '2019-09-15 23:13:06', 1568425951000);
 
 -- --------------------------------------------------------
 
@@ -1782,10 +1834,91 @@ CREATE TABLE `HEALTH_SCREENING_HAS_CHOICE` (
 --
 
 INSERT INTO `HEALTH_SCREENING_HAS_CHOICE` (`HEALTH_SCREENING_HAS_CHOICE_ID`, `HEALTH_SCREENING_HAS_CHOICE_DETAIL`, `HEALTH_SCREENING_HAS_CHOICE_CORRECT`, `HEALTH_SCREENING_AND_ADL_EVALUATION_ID`, `HEALTH_SCREENING_CHOICE_ID`) VALUES
-(1, '', 1, 1, 1),
-(2, '', 1, 1, 4),
-(3, '', 1, 1, 7),
-(4, '', 1, 1, 9);
+(1, NULL, NULL, 1, 1),
+(2, NULL, NULL, 1, 4),
+(3, NULL, NULL, 1, 7),
+(4, NULL, NULL, 1, 11),
+(5, NULL, NULL, 1, 13),
+(6, NULL, NULL, 1, 15),
+(7, 'wefw', NULL, 1, 16),
+(8, 'rgdf', NULL, 1, 17),
+(9, 'ergerfbearg', NULL, 1, 18),
+(10, 'efwef', NULL, 1, 19),
+(11, 'rgetr', NULL, 1, 20),
+(12, 'ergerg', NULL, 1, 21),
+(13, 'ergaerg', NULL, 1, 22),
+(14, 'efwerfw', NULL, 1, 23),
+(15, 'ertger', NULL, 1, 24),
+(16, 'gerg', NULL, 1, 25),
+(17, NULL, NULL, 1, 26),
+(18, NULL, NULL, 2, 1),
+(19, NULL, NULL, 2, 4),
+(20, NULL, NULL, 2, 7),
+(21, NULL, NULL, 2, 9),
+(22, NULL, NULL, 2, 13),
+(23, NULL, NULL, 2, 15),
+(24, 'ewfwef', NULL, 2, 16),
+(25, 'wefwef', NULL, 2, 17),
+(26, 'wefwe', NULL, 2, 18),
+(27, 'ewrerg', NULL, 2, 19),
+(28, 'fwef', NULL, 2, 20),
+(29, 'rgerg', NULL, 2, 21),
+(30, 'erger', NULL, 2, 22),
+(31, 'gera', NULL, 2, 23),
+(32, 'ethtgbaret', NULL, 2, 24),
+(33, 'hrtthrth', NULL, 2, 25),
+(34, NULL, NULL, 2, 28),
+(35, NULL, NULL, 3, 1),
+(36, NULL, NULL, 3, 4),
+(37, NULL, NULL, 3, 7),
+(38, NULL, NULL, 3, 9),
+(39, NULL, NULL, 3, 13),
+(40, NULL, NULL, 3, 15),
+(41, NULL, NULL, 3, 16),
+(42, NULL, NULL, 3, 17),
+(43, NULL, NULL, 3, 18),
+(44, NULL, NULL, 3, 19),
+(45, 'regerg', NULL, 3, 20),
+(46, NULL, NULL, 3, 21),
+(47, NULL, NULL, 3, 22),
+(48, NULL, NULL, 3, 23),
+(49, NULL, NULL, 3, 24),
+(50, NULL, NULL, 3, 25),
+(51, NULL, NULL, 3, 26),
+(52, NULL, NULL, 4, 1),
+(53, NULL, NULL, 4, 4),
+(54, NULL, NULL, 4, 7),
+(55, NULL, NULL, 4, 9),
+(56, NULL, NULL, 4, 13),
+(57, NULL, NULL, 4, 15),
+(58, NULL, NULL, 4, 16),
+(59, NULL, NULL, 4, 17),
+(60, NULL, NULL, 4, 18),
+(61, NULL, NULL, 4, 19),
+(62, NULL, NULL, 4, 20),
+(63, NULL, NULL, 4, 21),
+(64, NULL, NULL, 4, 22),
+(65, NULL, NULL, 4, 23),
+(66, NULL, NULL, 4, 24),
+(67, NULL, NULL, 4, 25),
+(68, NULL, NULL, 4, 26),
+(69, NULL, NULL, 5, 1),
+(70, NULL, NULL, 5, 4),
+(71, NULL, NULL, 5, 7),
+(72, NULL, NULL, 5, 9),
+(73, NULL, NULL, 5, 13),
+(74, NULL, NULL, 5, 15),
+(75, NULL, NULL, 5, 16),
+(76, NULL, NULL, 5, 17),
+(77, NULL, NULL, 5, 18),
+(78, NULL, NULL, 5, 19),
+(79, NULL, NULL, 5, 20),
+(80, NULL, NULL, 5, 21),
+(81, NULL, NULL, 5, 22),
+(82, NULL, NULL, 5, 23),
+(83, NULL, NULL, 5, 24),
+(84, NULL, NULL, 5, 25),
+(85, NULL, NULL, 5, 26);
 
 -- --------------------------------------------------------
 
@@ -1805,8 +1938,41 @@ CREATE TABLE `HEALTH_SCREENING_HAS_SUB_CHOICE` (
 --
 
 INSERT INTO `HEALTH_SCREENING_HAS_SUB_CHOICE` (`HEALTH_SCREENING_HAS_SUB_CHOICE_ID`, `HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL`, `HEALTH_SCREENING_AND_ADL_EVALUATION_ID`, `HEALTH_SCREENING_SUB_CHOICE_ID`) VALUES
-(1, '123', 1, 1),
-(2, '123', 1, 5);
+(1, '', 1, NULL),
+(2, '', 1, NULL),
+(3, '', 1, NULL),
+(4, '', 1, NULL),
+(5, '', 1, NULL),
+(6, '', 1, NULL),
+(7, '', 1, NULL),
+(8, '', 2, NULL),
+(9, '', 2, NULL),
+(10, '', 2, NULL),
+(11, '', 2, NULL),
+(12, '', 2, NULL),
+(13, '', 2, NULL),
+(14, 'rgergerg', 2, 7),
+(15, '', 3, NULL),
+(16, '', 3, NULL),
+(17, '', 3, NULL),
+(18, '', 3, NULL),
+(19, '', 3, NULL),
+(20, '', 3, NULL),
+(21, '', 3, NULL),
+(22, '', 4, NULL),
+(23, '', 4, NULL),
+(24, '', 4, NULL),
+(25, '', 4, NULL),
+(26, '', 4, NULL),
+(27, '', 4, NULL),
+(28, '', 4, NULL),
+(29, '', 5, NULL),
+(30, '', 5, NULL),
+(31, '', 5, NULL),
+(32, '', 5, NULL),
+(33, '', 5, NULL),
+(34, '', 5, NULL),
+(35, '', 5, NULL);
 
 -- --------------------------------------------------------
 
@@ -1923,7 +2089,50 @@ INSERT INTO `LOGIN` (`LOGIN_ID`, `LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES
 (10, 'BKK003', 0x9d18355f0970),
 (16, 'BKK004', 0x9d18355f093b),
 (17, 'BKK005', 0x9d18355f09b6),
-(18, 'BKK006', 0xf3635adadcdc);
+(18, 'BKK006', 0xf3635adadcdc),
+(19, 'BKK07', 0x6171890fc1),
+(20, 'BKK08', 0x6171890f6b),
+(21, 'BKK09', 0x6171890f55),
+(26, 'BKK010', 0x6171890f6961),
+(27, 'BKK011', 0x4d5a087ffb1c),
+(28, 'BKK012', 0xcf732ca858a2),
+(29, 'BKK013', 0x191d34c37784),
+(30, 'BKK014', 0xc9a882d5e91a),
+(31, 'BKK015', 0xf1936397613b),
+(32, 'BKK016', 0x656f252194a0),
+(33, 'BKK017', 0x55b9467a737f),
+(34, 'BKK018', 0x5a3e306fc032),
+(35, 'BKK019', 0x1651f4561e82),
+(36, 'BKK020', 0x5db417a2ac2d),
+(37, 'BKK021', 0x45d3b84c8b19),
+(38, 'BKK022', 0x2ef42ab28739),
+(39, 'BKK023', 0x9f9ab36ac79d),
+(40, 'BKK024', 0xa52790ef5792),
+(41, 'BKK025', 0xf5f2dd93917a),
+(42, 'BKK026', 0xc8f3b11f0bdb),
+(43, 'BKK027', 0xd1624c135f54),
+(44, 'BKK028', 0x566b4a811a3b),
+(45, 'BKK029', 0x88b9d3c832ea),
+(46, 'BKK030', 0x710123ae1342),
+(47, 'BKK031', 0x191267174ed1),
+(48, 'BKK032', 0xa5afc1763291),
+(49, 'BKK033', 0x4f6bbaa2aa95),
+(50, 'BKK034', 0x7a1c8393671d),
+(51, 'BKK035', 0x99b2451d71b2),
+(52, 'BKK036', 0xec68b6b2c25f),
+(53, 'BKK037', 0xa39f68119f85),
+(54, 'BKK038', 0x2bfc36a1577f),
+(55, 'BKK039', 0xb7b37f4f2e63),
+(56, 'BKK040', 0xde37a7249bbb),
+(57, 'BKK041', 0x9338e0a9977d),
+(58, 'BKK042', 0x9561ec6f2fe5),
+(59, 'BKK043', 0xbe07ab63b141),
+(60, 'BKK044', 0x8109a8391ea4),
+(61, 'BKK045', 0x4ff239db5447),
+(62, 'BKK046', 0x3620756c9acd),
+(63, 'BKK047', 0x04a5bc9a1dca),
+(64, 'BKK048', 0xa297df004040),
+(65, 'BKK049', 0xed798475026a);
 
 -- --------------------------------------------------------
 
@@ -1967,6 +2176,7 @@ CREATE TABLE `MEDICAL_CHECKUP` (
   `MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE` int(3) NOT NULL,
   `MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE` int(3) NOT NULL,
   `MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR` int(3) NOT NULL,
+  `MEDICAL_NOTE` text,
   `MEMBER_ID` bigint(13) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -1974,9 +2184,16 @@ CREATE TABLE `MEDICAL_CHECKUP` (
 -- Dumping data for table `MEDICAL_CHECKUP`
 --
 
-INSERT INTO `MEDICAL_CHECKUP` (`MEDICAL_CHECKUP_ID`, `MEDICAL_CHECKUP_DATE`, `MEDICAL_CHECKUP_WEIGHT`, `MEDICAL_CHECKUP_HEIGHT`, `MEDICAL_CHECKUP_BMI`, `MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE`, `MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE`, `MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR`, `MEMBER_ID`) VALUES
-(1, '2019-05-05', '90.0', '175.0', '30.0', 111, 222, 333, 1568425951000),
-(2, '2019-05-15', '90.0', '175.0', '30.0', 111, 222, 333, 1568425951000);
+INSERT INTO `MEDICAL_CHECKUP` (`MEDICAL_CHECKUP_ID`, `MEDICAL_CHECKUP_DATE`, `MEDICAL_CHECKUP_WEIGHT`, `MEDICAL_CHECKUP_HEIGHT`, `MEDICAL_CHECKUP_BMI`, `MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE`, `MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE`, `MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR`, `MEDICAL_NOTE`, `MEMBER_ID`) VALUES
+(1, '2019-05-05', '90.0', '175.0', '30.0', 111, 222, 333, NULL, 1568425951000),
+(2, '2019-05-15', '90.0', '175.0', '30.0', 111, 222, 333, NULL, 1568425951000),
+(3, '2019-09-11', '60.0', '165.0', '22.0', 12, 12, 12, 'dfdfd', 1568425951000),
+(4, '2019-09-06', '65.0', '180.0', '20.1', 21, 12, 15, 'trgrthdythj', 1568425951000),
+(5, '2019-09-06', '65.0', '180.0', '20.1', 21, 12, 15, 'trgrthdythj', 1568425951000),
+(6, '2019-09-05', '56.0', '165.0', '20.6', 15, 54, 65, 'jhjk', 1568425951000),
+(7, '2019-05-05', '90.0', '175.0', '30.0', 111, 222, 333, 'rgerg', 1568425951000),
+(8, '2019-09-11', '75.0', '192.0', '20.4', 56, 78, 56, 'jhujihiuo', 1568425951000),
+(9, '2019-09-09', '87.0', '192.0', '23.6', 78, 66, 87, 'kjk', 1568425951000);
 
 -- --------------------------------------------------------
 
@@ -9977,7 +10194,7 @@ INSERT INTO `SUBDISTRICT` (`SUBDISTRICT_ID`, `SUBDISTRICT_CODE`, `SUBDISTRICT_NA
 
 CREATE TABLE `USER` (
   `USER_ID` bigint(13) NOT NULL,
-  `USER_IDENTIFICATION_NUMBER` varchar(13) NOT NULL,
+  `USER_IDENTIFICATION_NUMBER` varchar(13) DEFAULT NULL,
   `USER_FIRST_NAME` varchar(50) NOT NULL,
   `USER_LAST_NAME` varchar(50) NOT NULL,
   `USER_IMAGE` varchar(255) DEFAULT NULL,
@@ -10001,6 +10218,49 @@ INSERT INTO `USER` (`USER_ID`, `USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, 
 (1568276196000, '1460700214810', 'mind', 'mind', '', 'mind2@terminal8.co.th', 'mind', 'mind', 1, 1, 1, 16, 1),
 (1568277416000, '1560700214810', 'mind', 'mind', '', 'mind5@terminal8.co.th', 'mind', 'mind', 1, 1, 1, 17, 1),
 (1568340432000, '1111100214810', 'mind', 'mind', '', 'mind11@terminal8.co.th', 'mind', 'mind', 1, 1, 1, 18, 1),
+(1568534119000, '1660700214810', 'เจ้าหน้าที่', 'kbb010', '', 'mind6@terminal8.co.th', NULL, NULL, 1, 1, 1, 19, 2),
+(1568534134000, '1760700214810', 'เจ้าหน้าที่', 'kbb010', '', 'mind7@terminal8.co.th', NULL, NULL, 1, 1, 1, 20, 2),
+(1568534143000, '1960700214810', 'เจ้าหน้าที่', 'kbb010', '', 'mind9@terminal8.co.th', NULL, NULL, 1, 1, 1, 21, 2),
+(1568534355000, NULL, 'เจ้าหน้าที่', 'kbb010', '', 'staff010@thaisynergy', NULL, NULL, 1, 1, 1, 26, 2),
+(1568534419000, NULL, 'เจ้าหน้าที่', 'kbb011', '', 'staff011@thaisynergy', NULL, NULL, 1, 1, 1, 27, 2),
+(1568534425000, NULL, 'เจ้าหน้าที่', 'kbb012', '', 'staff012@thaisynergy', NULL, NULL, 1, 1, 1, 28, 2),
+(1568534431000, NULL, 'เจ้าหน้าที่', 'kbb013', '', 'staff013@thaisynergy', NULL, NULL, 1, 1, 1, 29, 2),
+(1568534453000, NULL, 'เจ้าหน้าที่', 'kbb014', '', 'staff014@thaisynergy', NULL, NULL, 1, 1, 1, 30, 2),
+(1568534461000, NULL, 'เจ้าหน้าที่', 'kbb015', '', 'staff015@thaisynergy', NULL, NULL, 1, 1, 1, 31, 2),
+(1568534468000, NULL, 'เจ้าหน้าที่', 'kbb016', '', 'staff016@thaisynergy', NULL, NULL, 1, 1, 1, 32, 2),
+(1568534477000, NULL, 'เจ้าหน้าที่', 'kbb017', '', 'staff017@thaisynergy', NULL, NULL, 1, 1, 1, 33, 2),
+(1568534492000, NULL, 'เจ้าหน้าที่', 'kbb018', '', 'staff018@thaisynergy', NULL, NULL, 1, 1, 1, 34, 2),
+(1568534504000, NULL, 'เจ้าหน้าที่', 'kbb019', '', 'staff019@thaisynergy', NULL, NULL, 1, 1, 1, 35, 2),
+(1568534527000, NULL, 'เจ้าหน้าที่', 'kbb020', '', 'staff020@thaisynergy', NULL, NULL, 1, 1, 1, 36, 2),
+(1568534632000, NULL, 'เจ้าหน้าที่', 'kbb021', '', 'staff021@thaisynergy', NULL, NULL, 1, 1, 1, 37, 2),
+(1568534641000, NULL, 'เจ้าหน้าที่', 'kbb022', '', 'staff022@thaisynergy', NULL, NULL, 1, 1, 1, 38, 2),
+(1568534651000, NULL, 'เจ้าหน้าที่', 'kbb023', '', 'staff023@thaisynergy', NULL, NULL, 1, 1, 1, 39, 2),
+(1568534664000, NULL, 'เจ้าหน้าที่', 'kbb024', '', 'staff024@thaisynergy', NULL, NULL, 1, 1, 1, 40, 2),
+(1568534677000, NULL, 'เจ้าหน้าที่', 'kbb025', '', 'staff025@thaisynergy', NULL, NULL, 1, 1, 1, 41, 2),
+(1568534734000, NULL, 'เจ้าหน้าที่', 'kbb026', '', 'staff026@thaisynergy', NULL, NULL, 1, 1, 1, 42, 2),
+(1568534743000, NULL, 'เจ้าหน้าที่', 'kbb027', '', 'staff027@thaisynergy', NULL, NULL, 1, 1, 1, 43, 2),
+(1568534760000, NULL, 'เจ้าหน้าที่', 'kbb028', '', 'staff028@thaisynergy', NULL, NULL, 1, 1, 1, 44, 2),
+(1568534770000, NULL, 'เจ้าหน้าที่', 'kbb029', '', 'staff029@thaisynergy', NULL, NULL, 1, 1, 1, 45, 2),
+(1568534789000, NULL, 'เจ้าหน้าที่', 'kbb030', '', 'staff030@thaisynergy', NULL, NULL, 1, 1, 1, 46, 2),
+(1568534827000, NULL, 'เจ้าหน้าที่', 'kbb031', '', 'staff031@thaisynergy', NULL, NULL, 1, 1, 1, 47, 2),
+(1568534846000, NULL, 'เจ้าหน้าที่', 'kbb032', '', 'staff032@thaisynergy', NULL, NULL, 1, 1, 1, 48, 2),
+(1568534864000, NULL, 'เจ้าหน้าที่', 'kbb033', '', 'staff033@thaisynergy', NULL, NULL, 1, 1, 1, 49, 2),
+(1568534873000, NULL, 'เจ้าหน้าที่', 'kbb034', '', 'staff034@thaisynergy', NULL, NULL, 1, 1, 1, 50, 2),
+(1568534885000, NULL, 'เจ้าหน้าที่', 'kbb035', '', 'staff035@thaisynergy', NULL, NULL, 1, 1, 1, 51, 2),
+(1568534896000, NULL, 'เจ้าหน้าที่', 'kbb036', '', 'staff036@thaisynergy', NULL, NULL, 1, 1, 1, 52, 2),
+(1568534907000, NULL, 'เจ้าหน้าที่', 'kbb037', '', 'staff037@thaisynergy', NULL, NULL, 1, 1, 1, 53, 2),
+(1568534915000, NULL, 'เจ้าหน้าที่', 'kbb038', '', 'staff038@thaisynergy', NULL, NULL, 1, 1, 1, 54, 2),
+(1568534929000, NULL, 'เจ้าหน้าที่', 'kbb039', '', 'staff039@thaisynergy', NULL, NULL, 1, 1, 1, 55, 2),
+(1568534941000, NULL, 'เจ้าหน้าที่', 'kbb040', '', 'staff040@thaisynergy', NULL, NULL, 1, 1, 1, 56, 2),
+(1568534958000, NULL, 'เจ้าหน้าที่', 'kbb041', '', 'staff041@thaisynergy', NULL, NULL, 1, 1, 1, 57, 2),
+(1568534968000, NULL, 'เจ้าหน้าที่', 'kbb042', '', 'staff042@thaisynergy', NULL, NULL, 1, 1, 1, 58, 2),
+(1568534976000, NULL, 'เจ้าหน้าที่', 'kbb043', '', 'staff043@thaisynergy', NULL, NULL, 1, 1, 1, 59, 2),
+(1568534987000, NULL, 'เจ้าหน้าที่', 'kbb044', '', 'staff044@thaisynergy', NULL, NULL, 1, 1, 1, 60, 2),
+(1568535000000, NULL, 'เจ้าหน้าที่', 'kbb045', '', 'staff045@thaisynergy', NULL, NULL, 1, 1, 1, 61, 2),
+(1568535016000, NULL, 'เจ้าหน้าที่', 'kbb046', '', 'staff046@thaisynergy', NULL, NULL, 1, 1, 1, 62, 2),
+(1568535025000, NULL, 'เจ้าหน้าที่', 'kbb047', '', 'staff047@thaisynergy', NULL, NULL, 1, 1, 1, 63, 2),
+(1568535034000, NULL, 'เจ้าหน้าที่', 'kbb048', '', 'staff048@thaisynergy', NULL, NULL, 1, 1, 1, 64, 2),
+(1568535042000, NULL, 'เจ้าหน้าที่', 'kbb049', '', 'staff049@thaisynergy', NULL, NULL, 1, 1, 1, 65, 2),
 (3210987654321, '1419900635668', 'ธนกฤต', 'ฉวีรักษ์', '/image/user/bkk001.jpg', 'thanakrit.cha@terminal8.co.th', NULL, NULL, 1, 1, 1, 1, 2);
 
 -- --------------------------------------------------------
@@ -10283,7 +10543,6 @@ ALTER TABLE `SUBDISTRICT`
 --
 ALTER TABLE `USER`
   ADD PRIMARY KEY (`USER_ID`),
-  ADD UNIQUE KEY `USER_IDENTIFICATION_NUMBER` (`USER_IDENTIFICATION_NUMBER`),
   ADD UNIQUE KEY `USER_EMAIL` (`USER_EMAIL`),
   ADD KEY `NAME_TITLE_ID` (`NAME_TITLE_ID`),
   ADD KEY `SUBDISTRICT_ID` (`SUBDISTRICT_ID`),
@@ -10324,7 +10583,7 @@ ALTER TABLE `ADL_CHOICE`
 -- AUTO_INCREMENT for table `ADL_EVALUATION_HAS_CHOICE`
 --
 ALTER TABLE `ADL_EVALUATION_HAS_CHOICE`
-  MODIFY `EVALUATION_HAS_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `EVALUATION_HAS_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `ADL_QUESTIONNAIRE`
@@ -10384,7 +10643,7 @@ ALTER TABLE `ETHNICITY`
 -- AUTO_INCREMENT for table `HEALTH_SCREENING_AND_ADL_EVALUATION`
 --
 ALTER TABLE `HEALTH_SCREENING_AND_ADL_EVALUATION`
-  MODIFY `HEALTH_SCREENING_AND_ADL_EVALUATION_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `HEALTH_SCREENING_AND_ADL_EVALUATION_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `HEALTH_SCREENING_CHOICE`
@@ -10396,13 +10655,13 @@ ALTER TABLE `HEALTH_SCREENING_CHOICE`
 -- AUTO_INCREMENT for table `HEALTH_SCREENING_HAS_CHOICE`
 --
 ALTER TABLE `HEALTH_SCREENING_HAS_CHOICE`
-  MODIFY `HEALTH_SCREENING_HAS_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `HEALTH_SCREENING_HAS_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `HEALTH_SCREENING_HAS_SUB_CHOICE`
 --
 ALTER TABLE `HEALTH_SCREENING_HAS_SUB_CHOICE`
-  MODIFY `HEALTH_SCREENING_HAS_SUB_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `HEALTH_SCREENING_HAS_SUB_CHOICE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `HEALTH_SCREENING_QUESTIONNAIRE`
@@ -10426,7 +10685,7 @@ ALTER TABLE `ICE_CONTACT`
 -- AUTO_INCREMENT for table `LOGIN`
 --
 ALTER TABLE `LOGIN`
-  MODIFY `LOGIN_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `LOGIN_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `MEDICAL_CARE`
@@ -10438,7 +10697,7 @@ ALTER TABLE `MEDICAL_CARE`
 -- AUTO_INCREMENT for table `MEDICAL_CHECKUP`
 --
 ALTER TABLE `MEDICAL_CHECKUP`
-  MODIFY `MEDICAL_CHECKUP_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `MEDICAL_CHECKUP_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `MEMBER_HAS_DISABILITY`

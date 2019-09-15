@@ -413,7 +413,7 @@ app.post('/insert_member', async (req, res) => {
 
         // console.log(user_id);
         
-        console.log(req.body.member);
+        // console.log(req.body.member);
         
         const fetchData_member = req.body.member;
         const permanentAddressMember = fetchData_member.permanentAddressMember;
@@ -929,7 +929,7 @@ app.post('/insert_member', async (req, res) => {
 });
 
 app.post('/delete_member', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const member_id = req.body.member_id;
   //console.log(member_id);
 
@@ -2010,6 +2010,8 @@ app.post('/insert_adl_evaluation',async (req, res) => {
 
     db.query('INSERT INTO ADL_EVALUATION_HAS_CHOICE SET ? ON DUPLICATE KEY UPDATE ?', [ temp_data , temp_data_on], function (error, results, fields) {
       if (error) {
+        console.log(error);
+        
         res.json({ "results": { "status": "404" } });
       }
     });
@@ -2155,8 +2157,9 @@ async function get_adl_screening(id) {
 app.post('/insert_medical_checkup', async (req, res) => {
 
   // console.log(req.body);
-  
-  let member_id = req.body.member_id;
+
+  try {
+    let member_id = req.body.member_id;
 
   let fetch_medical_checkup_date = req.body.medical_checkup
 
@@ -2168,6 +2171,7 @@ app.post('/insert_medical_checkup', async (req, res) => {
   let medical_checkup_sbp = fetch_medical_checkup_date.medical_checkup_sbp;
   let medical_checkup_dbp = fetch_medical_checkup_date.medical_checkup_dbp;
   let medical_checkup_fbs = fetch_medical_checkup_date.medical_checkup_fbs;
+  let medical_note = fetch_medical_checkup_date.medical_note;
 
   // res.json({fetch_medical_checkup_date});
 
@@ -2180,6 +2184,7 @@ app.post('/insert_medical_checkup', async (req, res) => {
     "MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE":medical_checkup_sbp,
     "MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE":medical_checkup_dbp,
     "MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR":medical_checkup_fbs,
+    "MEDICAL_NOTE":medical_note,
     "MEMBER_ID":member_id
   }
 
@@ -2191,6 +2196,7 @@ app.post('/insert_medical_checkup', async (req, res) => {
     "MEDICAL_CHECKUP_SYSTOLIC_BLOOD_PRESSURE":medical_checkup_sbp,
     "MEDICAL_CHECKUP_DIASTOLIC_BLOOD_PRESSURE":medical_checkup_dbp,
     "MEDICAL_CHECKUP_FASTING_BLOOD_SUGAR":medical_checkup_fbs,
+    "MEDICAL_NOTE":medical_note,
     
   }
 
@@ -2202,9 +2208,43 @@ app.post('/insert_medical_checkup', async (req, res) => {
       res.json({ "status":404 });
     }
     else{
-      res.json({ "status":200 });
+      // res.json({ "status":200 });
     }
   });
+
+  if (medical_checkup_id==null) {
+    db.query('SELECT MEDICAL_CHECKUP.*,DATE_FORMAT(MEDICAL_CHECKUP.MEDICAL_CHECKUP_DATE, "%d/%m/%Y") AS MEDICAL_CHECKUP_DATE FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEDICAL_CHECKUP_ID = LAST_INSERT_ID()', function (error, results, fields) {
+ 
+      if (error) {
+        console.log(error);
+        res.json({ "status":404 });
+      }
+      else{
+        res.json({ "results":{ "status":200 ,"data":results[0]}});
+      }
+    });
+  }
+  else{
+    db.query('SELECT MEDICAL_CHECKUP.*,DATE_FORMAT(MEDICAL_CHECKUP.MEDICAL_CHECKUP_DATE, "%d/%m/%Y") AS MEDICAL_CHECKUP_DATE FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEDICAL_CHECKUP_ID = ?',medical_checkup_id, function (error, results, fields) {
+ 
+      if (error) {
+        console.log(error);
+        res.json({ "status":404 });
+      }
+      else{
+        res.json({ "results":{ "status":200 ,"data":results[0]}});
+      }
+    });
+  }
+
+  } catch (error) {
+    res.json({ "status":404 });
+  }
+  
+  
+  
+
+
 });
 
 
@@ -2233,7 +2273,7 @@ app.post('/get_medical_checkup_by_medical_id', async (req, res) => {
   
   let medical_id = req.body.medical_checkup_id;
 
-  db.query('SELECT * FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEDICAL_CHECKUP_ID = ?',medical_id, function (error, results, fields) {
+  db.query('SELECT MEDICAL_CHECKUP.*,DATE_FORMAT(MEDICAL_CHECKUP.MEDICAL_CHECKUP_DATE, "%d/%m/%Y") AS MEDICAL_CHECKUP_DATE FROM `MEDICAL_CHECKUP` WHERE MEDICAL_CHECKUP.MEDICAL_CHECKUP_ID = ?',medical_id, function (error, results, fields) {
  
     if (error) {
       console.log(error);
