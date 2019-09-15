@@ -76,9 +76,9 @@ app.post('/insert_user', async (req, res) => {
   // let department_id = fetch_user.department_id;
   let user_type_id = fetch_user.user_type_id;
 
-  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'00',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ? ))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'00',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?)))),?))",[department_id,department_id,department_id,department_id,password], function (error, results, fields) {
+  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'0',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ? ))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'0',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?)))),?))",[department_id,department_id,department_id,department_id,password], function (error, results, fields) {
       if (error) {
-        // console.log(error);
+        console.log(error);
         
         res.json({ "results": { "status": "400" } });
       }
@@ -87,7 +87,7 @@ app.post('/insert_user', async (req, res) => {
 
     db.query("INSERT INTO `USER`(`USER_ID`,`USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_IMAGE`, `USER_EMAIL`, `USER_LINE_ID`, `USER_FACEBOOK_ID`, `NAME_TITLE_ID`, `SUBDISTRICT_ID`, `DEPARTMENT_ID`, `LOGIN_ID`, `USER_TYPE_ID`) VALUES (UNIX_TIMESTAMP()*1000,?,?,?,?,?,?,?,?,?,?,LAST_INSERT_ID(),?)",[idcard , user_first_name , user_last_name , user_image , user_email , user_line_id , user_facebook_id , name_title_id , subdistrict_id , department_id , user_type_id], function (error, results, fields) {
       if (error) {
-        // console.log(error);
+        console.log(error);
         res.json({ "results": { "status": "404" } });
       }
       else {
@@ -204,10 +204,10 @@ app.get('/get_religiion', (req, res) => {
 });
 
 app.get('/get_member_all', (req, res) => {
-  console.log("asdasdasdasd");
+  // console.log("asdasdasdasd");
 
   db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER,  DATE_FORMAT(MEMBER.MEMBER_BIRTH_DATE, "%d/%m/%Y") AS MEMBER_BIRTH_DATE FROM MEMBER', function (error, results, fields) {
-    console.log(results);
+    // console.log(results);
 
     res.json({ "results":{"status":200,"data":results} });
   });
@@ -216,14 +216,14 @@ app.get('/get_member_all', (req, res) => {
 app.post('/get_member_info_for_health_service', (req, res) => {
   // console.log(req.body);
   let member_id= req.body.member_id;
-  console.log(req.body);
+  // console.log(req.body);
   
   db.query('SELECT MEMBER.MEMBER_ID,MEMBER.MEMBER_IDENTIFICATION_NUMBER,CONCAT(MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS FULLNAME, CONVERT(MEMBER.MEMBER_BIRTH_DATE,char(255)) as MEMBER_BIRTH_DATE  FROM MEMBER WHERE MEMBER.MEMBER_ID = ?',member_id, function (error, results, fields) {
     if (error) {
       // console.log(error);
       
     }
-    console.log(results);
+    // console.log(results);
     
     res.json(results);
   });
@@ -354,7 +354,7 @@ async function get_data_addr_ice_contact(id) {
 
 ///////////// GET RIGHT INFOMATION///////////////
 app.post('/get_rights_information',async (req, res) => {
-  console.log(req.body.member_id);
+  // console.log(req.body.member_id);
   
   let member_id = req.body.member_id;
   let equipment = await get_rights_information_equipment(member_id);
@@ -1887,34 +1887,82 @@ app.post('/get_has_disability', (req, res) => {
 //////////////INSERT HEALTH_SCREENING ///////////////////
 app.post('/insert_health_screening',async (req, res) => {
   let member_id = req.body.member_id;
-
-  let id_health_screening_adl_evaluation = await insert_health_screening(member_id);
-  // console.log(id_health_screening);
+  let health_screening_adl_evaluation_id = req.body.health_screening_adl_evaluation_id;
+  // console.log(req.body);
   let health_screening_has_choice = req.body.health_screening_has_choice;
+  let id_health_screening_adl_evaluation=health_screening_adl_evaluation_id;
+  if (health_screening_adl_evaluation_id==null) {
+    id_health_screening_adl_evaluation = await insert_health_screening(member_id);
+  }
+  // let id_health_screening_adl_evaluation = await insert_health_screening(member_id);
+  // console.log(id_health_screening);
+  
   for (let index = 0; index < health_screening_has_choice.length; index++) {
-    db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE(HEALTH_SCREENING_HAS_CHOICE_DETAIL, HEALTH_SCREENING_HAS_CHOICE_CORRECT, HEALTH_SCREENING_AND_ADL_EVALUATION_ID, HEALTH_SCREENING_CHOICE_ID) VALUES( ? , ? , ?, ? )', [health_screening_has_choice[index].health_screening_has_choice_detail , health_screening_has_choice[index].health_screening_has_choice_correct , id_health_screening_adl_evaluation , health_screening_has_choice[index].health_screening_choice_id], function (error, results, fields) {
+    // console.log(health_screening_has_choice[index].health_screening_has_choice_detail);
+    
+    let temp_data = {
+      "HEALTH_SCREENING_HAS_CHOICE_ID":health_screening_has_choice[index].health_screening_has_choice_id,
+      "HEALTH_SCREENING_HAS_CHOICE_DETAIL":health_screening_has_choice[index].health_screening_has_choice_detail,
+      "HEALTH_SCREENING_HAS_CHOICE_CORRECT":health_screening_has_choice[index].health_screening_has_choice_correct,
+      "HEALTH_SCREENING_AND_ADL_EVALUATION_ID":id_health_screening_adl_evaluation,
+      "HEALTH_SCREENING_CHOICE_ID":health_screening_has_choice[index].health_screening_choice_id
+    }
+    let temp_data_on = {
+      "HEALTH_SCREENING_HAS_CHOICE_DETAIL":health_screening_has_choice[index].health_screening_has_choice_detail,
+      "HEALTH_SCREENING_HAS_CHOICE_CORRECT":health_screening_has_choice[index].health_screening_has_choice_correct,
+      "HEALTH_SCREENING_CHOICE_ID":health_screening_has_choice[index].health_screening_choice_id
+    }
+
+
+    db.query('INSERT INTO HEALTH_SCREENING_HAS_CHOICE SET ? ON DUPLICATE KEY UPDATE ?', [temp_data,temp_data_on], function (error, results, fields) {
       if (error) {
-        // console.log(error);
+        console.log(error);
         
         res.json({ "results": { "status": "404" } });
       }
     });
   }
 
-
+  // console.log("Heal id :"+id_health_screening_adl_evaluation);
+  
+  
   let health_screening_sub_choice = req.body.health_screening_sub_choice;
   for (let index2 = 0; index2 < health_screening_sub_choice.length; index2++) {
-    db.query("INSERT INTO HEALTH_SCREENING_HAS_SUB_CHOICE(HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL, HEALTH_SCREENING_AND_ADL_EVALUATION_ID, HEALTH_SCREENING_SUB_CHOICE_ID) VALUES(?, ?, ?)",[health_screening_sub_choice[index2].health_screening_has_sub_choice_detail,id_health_screening_adl_evaluation,health_screening_sub_choice[index2].health_screening_sub_choice_id], function (error, results, fields) {
-      // console.log(index2);
-      
-      if (error) {
-        // console.log(error);
-        res.json({ "results": { "status": "404" } });
+    // if (health_screening_sub_choice[index2].health_screening_sub_choice_id!=false) {
+
+      let temp_data2 = {
+        "HEALTH_SCREENING_HAS_SUB_CHOICE_ID":health_screening_sub_choice[index2].health_screening_has_sub_choice_id,
+        "HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL":health_screening_sub_choice[index2].health_screening_has_sub_choice_detail,
+        "HEALTH_SCREENING_AND_ADL_EVALUATION_ID":id_health_screening_adl_evaluation,
+        "HEALTH_SCREENING_SUB_CHOICE_ID":health_screening_sub_choice[index2].health_screening_sub_choice_id
       }
-    });
+      let temp_data2_on = {
+       
+        "HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL":health_screening_sub_choice[index2].health_screening_has_sub_choice_detail,
+        "HEALTH_SCREENING_SUB_CHOICE_ID":health_screening_sub_choice[index2].health_screening_sub_choice_id
+      }
+
+      db.query("INSERT INTO HEALTH_SCREENING_HAS_SUB_CHOICE SET ? ON DUPLICATE KEY UPDATE ?",[temp_data2,temp_data2_on], function (error, results, fields) {
+        if (error) {
+          console.log(error);
+          res.json({ "results": { "status": "404" } });
+        }
+      });
+    // }
   }
+
+
+  let get_health_screening_data = await get_health_screening(id_health_screening_adl_evaluation)
+  let get_health_screening_sub_data = await get_health_screening_sub(id_health_screening_adl_evaluation)
+  // console.log(get_health_screening_data);
+  
+  // db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',health_screening_and_adl_evaluation_id, function (error, results, fields) {
+  //   //console.log(results);
+
+  res.json({ "results":{"status":200,"data":{"member_id":member_id,"health_screening_adl_evaluation_id":id_health_screening_adl_evaluation,"health_screening_has_choice":get_health_screening_data,"health_screening_sub_choice":get_health_screening_sub_data} } });
+  // });
  
- res.json({ "results": { "status": 200 ,"data":{"id":id_health_screening_adl_evaluation}}});
+//  res.json({ "results": { "status": 200 ,"data":{"id":id_health_screening_adl_evaluation}}});
 
 
 });
@@ -1948,16 +1996,31 @@ app.post('/insert_adl_evaluation',async (req, res) => {
   let id = req.body.id_health_screening_adl_evaluation;
   let adl_evaluation = req.body.adl_evaluation;
   for (let index = 0; index < adl_evaluation.length; index++) {
-    db.query('INSERT INTO ADL_EVALUATION_HAS_CHOICE(HEALTH_SCREENING_AND_ADL_EVALUATION_ID, ADL_CHOICE_ID)  VALUES(?, ?)', [  id , adl_evaluation[index].adl_choice_id], function (error, results, fields) {
+
+    let temp_data={
+      "EVALUATION_HAS_CHOICE_ID":adl_evaluation[index].adl_has_choice_id,
+      "HEALTH_SCREENING_AND_ADL_EVALUATION_ID":id,
+      "ADL_CHOICE_ID":adl_evaluation[index].adl_choice_id
+    }
+
+    let temp_data_on={
+      "ADL_CHOICE_ID":adl_evaluation[index].adl_choice_id
+    }
+
+
+    db.query('INSERT INTO ADL_EVALUATION_HAS_CHOICE SET ? ON DUPLICATE KEY UPDATE ?', [ temp_data , temp_data_on], function (error, results, fields) {
       if (error) {
         res.json({ "results": { "status": "404" } });
       }
     });
   }
+
+  let get_adl_data = await get_adl_screening(id);
  
- res.json({ "results": { "status": 200}});
+ res.json({ "results": { "status": 200 , "data":get_adl_data}});
 
 });
+
 
 
 
@@ -2044,12 +2107,13 @@ app.post('/get_health_screening_has_choice_byid', async (req, res) => {
 
   let get_health_screening_data = await get_health_screening(health_screening_and_adl_evaluation_id)
   let get_adl_data = await get_adl_screening(health_screening_and_adl_evaluation_id)
+  let get_health_screening_sub_data = await get_health_screening_sub(health_screening_and_adl_evaluation_id)
   // console.log(get_health_screening_data);
   
   // db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',health_screening_and_adl_evaluation_id, function (error, results, fields) {
   //   //console.log(results);
 
-    res.json({ "status":200,"data":{"health_screening":get_health_screening_data,"adl_screening":get_adl_data} });
+    res.json({"results":{ "status":200,"data":{"health_screening_has_choice":get_health_screening_data,"health_screening_sub_choice":get_health_screening_sub_data,"adl_screening":get_adl_data}} });
   // });
 });
 
@@ -2058,7 +2122,18 @@ async function get_health_screening(id) {
   
   return new Promise(resolve => {
     setTimeout(() => {
-      db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.*,HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE,HEALTH_SCREENING_QUESTIONNAIRE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_QUESTIONNAIRE_ID = HEALTH_SCREENING_QUESTIONNAIRE.HEALTH_SCREENING_QUESTIONNAIRE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',id, function (error, results, fields) {
+      db.query('SELECT HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_HAS_CHOICE_ID as health_screening_has_choice_id,HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_HAS_CHOICE_DETAIL as health_screening_has_choice_detail,HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_HAS_CHOICE_CORRECT as health_screening_has_choice_correct,HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID as health_screening_choice_id FROM HEALTH_SCREENING_HAS_CHOICE,HEALTH_SCREENING_CHOICE WHERE HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_CHOICE_ID = HEALTH_SCREENING_CHOICE.HEALTH_SCREENING_CHOICE_ID AND HEALTH_SCREENING_HAS_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID = ? ',id, function (error, results, fields) {
+        resolve(results);
+      });
+    }, 250);
+  });
+}
+
+async function get_health_screening_sub(id) {
+  
+  return new Promise(resolve => {
+    setTimeout(() => {
+      db.query('SELECT HEALTH_SCREENING_HAS_SUB_CHOICE.HEALTH_SCREENING_HAS_SUB_CHOICE_ID as health_screening_has_sub_choice_id ,HEALTH_SCREENING_HAS_SUB_CHOICE.HEALTH_SCREENING_HAS_SUB_CHOICE_DETAIL as health_screening_has_sub_choice_detail,HEALTH_SCREENING_HAS_SUB_CHOICE.HEALTH_SCREENING_SUB_CHOICE_ID as health_screening_sub_choice_id FROM `HEALTH_SCREENING_HAS_SUB_CHOICE` WHERE HEALTH_SCREENING_HAS_SUB_CHOICE.HEALTH_SCREENING_AND_ADL_EVALUATION_ID =  ? ',id, function (error, results, fields) {
         resolve(results);
       });
     }, 250);
@@ -2079,7 +2154,7 @@ async function get_adl_screening(id) {
 
 app.post('/insert_medical_checkup', async (req, res) => {
 
-  console.log(req.body);
+  // console.log(req.body);
   
   let member_id = req.body.member_id;
 
@@ -2154,7 +2229,7 @@ app.post('/get_medical_checkup_by_member_id', async (req, res) => {
 
 app.post('/get_medical_checkup_by_medical_id', async (req, res) => {
 
-  console.log(req.body);
+  // console.log(req.body);
   
   let medical_id = req.body.medical_checkup_id;
 
