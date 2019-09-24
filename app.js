@@ -40,28 +40,28 @@ app.listen(3000, () => {
 app.use(express.static('uploads'))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-app.post('/api_check', [
+// app.post('/api_check', [
 
-  check('username').isEmail(),
-  check('password').isLength({ min: 5 }),
+//   check('username').isEmail(),
+//   check('password').isLength({ min: 5 }),
 
-  check('user_id').not().isEmpty(),
-  check('member.informationMember.idcard').not().isEmpty().isLength({ min: 13, max: 13 }),
-  check('member.informationMember.fname').not().isEmpty(),
-  check('member.informationMember.lname').not().isEmpty(),
+//   check('user_id').not().isEmpty(),
+//   check('member.informationMember.idcard').not().isEmpty().isLength({ min: 13, max: 13 }),
+//   check('member.informationMember.fname').not().isEmpty(),
+//   check('member.informationMember.lname').not().isEmpty(),
 
-], (req, res) => {
-  // Finds the validation errors in this request and wraps them in an object with handy functions
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
-  }
+// ], (req, res) => {
+//   // Finds the validation errors in this request and wraps them in an object with handy functions
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(422).json({ errors: errors.array() });
+//   }
 
-  User.create({
-    username: req.body.username,
-    password: req.body.password
-  }).then(user => res.json(user));
-});
+//   User.create({
+//     username: req.body.username,
+//     password: req.body.password
+//   }).then(user => res.json(user));
+// });
 
 // app.post('/api', (req, res) => {
 //   const feedback = req.body.feedback;
@@ -110,7 +110,7 @@ app.post('/insert_user', async (req, res) => {
   // let department_id = fetch_user.department_id;
   let user_type_id = fetch_user.user_type_id;
 
-  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'0',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ? ))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),'0',(SELECT COUNT(USER.USER_ID)+1 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?)))),?))", [department_id, department_id, department_id, department_id, password], function (error, results, fields) {
+  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5)))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5))))),?))", [department_id, department_id, department_id, department_id, password], function (error, results, fields) {
     if (error) {
       console.log(error);
 
@@ -119,7 +119,7 @@ app.post('/insert_user', async (req, res) => {
   });
 
 
-  db.query("INSERT INTO `USER`(`USER_ID`,`USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_IMAGE`, `USER_EMAIL`, `USER_LINE_ID`, `USER_FACEBOOK_ID`, `NAME_TITLE_ID`, `SUBDISTRICT_ID`, `DEPARTMENT_ID`, `LOGIN_ID`, `USER_TYPE_ID`) VALUES (UNIX_TIMESTAMP()*1000,?,?,?,?,?,?,?,?,?,?,LAST_INSERT_ID(),?)", [idcard, user_first_name, user_last_name, user_image, user_email, user_line_id, user_facebook_id, name_title_id, subdistrict_id, department_id, user_type_id], function (error, results, fields) {
+  db.query("INSERT INTO `USER`(`USER_ID`,`USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_IMAGE`, `USER_EMAIL`, `USER_LINE_ID`, `USER_FACEBOOK_ID`, `NAME_TITLE_ID`, `SUBDISTRICT_ID`, `DEPARTMENT_ID`, `LOGIN_ID`, `USER_TYPE_ID` ,`USER_STATUS`) VALUES (UNIX_TIMESTAMP()*1000,?,?,?,?,?,?,?,?,?,?,LAST_INSERT_ID(),?,1)", [idcard, user_first_name, user_last_name, user_image, user_email, user_line_id, user_facebook_id, name_title_id, subdistrict_id, department_id, user_type_id], function (error, results, fields) {
     if (error) {
       console.log(error);
       res.json({ "results": { "status": "404" } });
@@ -150,8 +150,10 @@ app.post('/user_login', async (req, res) => {
   let password = fetch_login.password;
 
 
-  db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as USER_ID FROM `LOGIN` WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?)", [username, username, password], function (error, results, fields) {
+  db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as USER_ID FROM LOGIN,USER WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?) AND LOGIN.LOGIN_ID = USER.LOGIN_ID AND USER.USER_STATUS = 1", [username, username, password], function (error, results, fields) {
     if (error) {
+      console.log(error);
+      
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -170,7 +172,7 @@ app.post('/user_login', async (req, res) => {
 
 /////////// General Data ///////////////
 app.get('/get_prefix', (req, res) => {
-  db.query('SELECT * FROM `NAME_TITLE` ORDER BY `NAME_TITLE`.`NAME_TITLE_ID` ASC', function (error, results, fields) {
+  db.query('SELECT `NAME_TITLE`.`NAME_TITLE_ID` as id ,`NAME_TITLE`.`NAME_TITLE_NAME` as name FROM `NAME_TITLE` ORDER BY `NAME_TITLE`.`NAME_TITLE_ID` ASC', function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -213,7 +215,7 @@ app.get('/get_member_status', (req, res) => {
 
 //สัญชาติ
 app.get('/get_nationality', (req, res) => {
-  db.query('SELECT * FROM `NATIONALITY`', function (error, results, fields) {
+  db.query('SELECT NATIONALITY.NATIONALITY_ID as id , CONCAT(NATIONALITY.NATIONALITY_NAME_TH) as name FROM `NATIONALITY`', function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -222,7 +224,7 @@ app.get('/get_nationality', (req, res) => {
 
 //เชื้อชาติ
 app.get('/get_ethnicity', (req, res) => {
-  db.query('SELECT * FROM `ETHNICITY`', function (error, results, fields) {
+  db.query('SELECT ETHNICITY.ETHNICITY_ID as id , CONCAT(ETHNICITY.ETHNICITY_NAME_TH) as name FROM `ETHNICITY`', function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -230,7 +232,7 @@ app.get('/get_ethnicity', (req, res) => {
 });
 //ศาสนา
 app.get('/get_religiion', (req, res) => {
-  db.query('SELECT * FROM `RELIGION`', function (error, results, fields) {
+  db.query('SELECT RELIGION.RELIGION_ID as id , RELIGION.RELIGION_NAME as name FROM `RELIGION`', function (error, results, fields) {
     //console.log(results);
 
     res.json({ results });
@@ -497,12 +499,12 @@ app.post('/insert_member', upload.single('photo'), [
       const firstname = personalData.fname;
       const lastname = personalData.lname;
       const image = personalData.image;
-      console.log(image);
+      // console.log(image);
 
 
       const old_image = personalData.imageOld;
       if (old_image != null) {
-        console.log("old_image : " + old_image);
+        // console.log("old_image : " + old_image);
 
       }
 
@@ -512,7 +514,7 @@ app.post('/insert_member', upload.single('photo'), [
       if (birthday_data != '') {
         birthday = birthday_data;
       }
-      console.log(birthday);
+      // console.log(birthday);
 
 
 
@@ -528,16 +530,16 @@ app.post('/insert_member', upload.single('photo'), [
       if (issuedate_data != '') {
         issuedate = issuedate_data;
       }
-      console.log(issuedate);
+      // console.log(issuedate);
 
       const expiry_data = personalData.expiredDate;
 
       let expiry = null;
-      if (issuedate_data != '') {
+      if (expiry_data != '') {
         expiry = expiry_data;
       }
 
-      console.log(expiry_data);
+      // console.log(expiry_data);
 
 
 
@@ -547,6 +549,9 @@ app.post('/insert_member', upload.single('photo'), [
       // const expiry = personalData.expiredDate;
       const title_id = personalData.prefix;
       const province = personalData.provinceOfBirth;
+
+      // console.log("provinceOfBirth : "+province);
+      
       const nationality = personalData.nationality;
       const ethnicity = personalData.ethnicity;
       const religion = personalData.religion;
@@ -740,6 +745,30 @@ app.post('/insert_member', upload.single('photo'), [
 app.post('/delete_member', (req, res) => {
   // console.log(req.body);
   const member_id = req.body.member_id;
+
+  db.query("DELETE FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.PERMANENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ? )",member_id, function (error, results, fields) {
+
+    if (error) {
+      console.log(error);
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+      console.log("DELETE PERMANENT_ADDRESS_ID");
+      // res.json({"status":"200"});
+    }
+  });
+
+  db.query("DELETE FROM `ADDRESS` WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ? )",member_id, function (error, results, fields) {
+
+    if (error) {
+      console.log(error);
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+      console.log("DELETE CURRENT_ADDRESS_ID");
+      // res.json({"status":"200"});
+    }
+  });
 
   db.query("DELETE FROM `EQUIPMENT` WHERE EQUIPMENT.MEMBER_ID =" + member_id + "", function (error, results, fields) {
 
@@ -1225,17 +1254,20 @@ app.post('/update_member', (req, res) => {
   if (issuedate_data != '') {
     issuedate = issuedate_data;
   }
-  // console.log(issuedate);
+  // console.log("issuedate :"+issuedate);
   const expiry_data = personalData.expiredDate;
 
   let expiry = null;
-  if (issuedate_data != '') {
+  if (expiry_data != "") {
+    // console.log(expiry_data);
     expiry = expiry_data;
   }
   // console.log(expiry_data);
 
   const title_id = personalData.prefix;
   const province = personalData.provinceOfBirth;
+  // console.log(province);
+  
   const nationality = personalData.nationality;
   const ethnicity = personalData.ethnicity;
   const religion = personalData.religion;
@@ -1341,7 +1373,7 @@ app.post('/update_member', (req, res) => {
     // db.query("UPDATE `MEMBER` SET ? WHERE MEMBER.MEMBER_ID = ?", [data, member_id], function (error, results, fields) {
 
     if (error) {
-      // console.log(error);
+      console.log(error);
       res.json({ "results": { "status": "404" } });
     }
     else {
@@ -2149,4 +2181,146 @@ app.post('/check_idcard', async (req, res) => {
   // }
 
   
+});
+
+////////////// USER /////////////////////
+app.post('/check_department', async (req, res) => {
+  let department_id = req.body.department_id;
+
+  db.query("SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5))) as USERNAME", [department_id, department_id], function (error, results, fields) {
+    if (error) {
+      console.log(error);
+
+      res.json({ "results": { "status": "400" } });
+    }
+    else{
+      res.json({ "results": { "status": "200","data":{"USERNAME":results[0].USERNAME} } });
+    }
+  });
+});
+
+
+app.get('/get_department_option', (req, res) => {
+  db.query('SELECT CONCAT((SELECT DEPARTMENT_TYPE.DEPARTMENT_TYPE_NAME FROM DEPARTMENT_TYPE WHERE DEPARTMENT_TYPE.DEPARTMENT_TYPE_ID = DEPARTMENT.DEPARTMENT_TYPE_ID),"(",`DEPARTMENT`.`DEPARTMENT_NAME`,")") as DEPARTMENT_NAME , DEPARTMENT.DEPARTMENT_ID FROM `DEPARTMENT`', function (error, results, fields) {
+    res.json({ results });
+  });
+});
+
+
+app.post('/update_user', async (req, res) => {
+  let login_id = req.body.login_id;
+  let user = req.body.user;
+  let temp_data = {
+    "USER_IDENTIFICATION_NUMBER":user.user_identification_number,
+    "USER_FIRST_NAME":user.user_first_name,
+    "USER_LAST_NAME":user.user_last_name,
+    "USER_IMAGE":user.user_image,
+    "USER_EMAIL":user.user_email,
+    "USER_LINE_ID":user.user_line_id,
+    "USER_FACEBOOK_ID":user.user_facebook_id,
+    "NAME_TITLE_ID":user.name_title_id,
+    "SUBDISTRICT_ID":user.subdistrict_id,
+    "DEPARTMENT_ID":user.department_id
+  }
+
+  db.query("UPDATE `USER` SET ? WHERE `USER`.`LOGIN_ID` = ? ", [temp_data, login_id], function (error, results, fields) {
+    if (error) {
+      console.log(error);
+      res.json({ "results": { "status": "400" } });
+    }
+    else{
+      res.json({ "results": { "status": "200" } });
+    }
+  });
+});
+
+
+app.post('/check_user_email', async (req, res) => {
+  let user_email = req.body.user_email;
+  db.query("SELECT IF(COUNT(USER.USER_ID)>=1,false,true) as email_status FROM `USER` WHERE `USER`.`USER_EMAIL` = ? ",user_email, function (error, results, fields) {
+    if (error) {
+      console.log(error);
+      res.json({ "results": { "status": "400" } });
+    }
+    else{
+      res.json({ "results": { "status": "200" ,"data":results[0].email_status } });
+    }
+  });
+});
+
+
+
+app.post('/get_user_list', async (req, res) => {
+  let user_type = req.body.user_type;
+  let data_temp = "SELECT * FROM `USER` ";
+  if (user_type==2) {
+    data_temp += "WHERE USER.USER_TYPE_ID = 2";
+  }
+  console.log(data_temp);
+  
+  db.query(data_temp, function (error, results, fields) {
+    if (error) {
+      console.log(error);
+      res.json({ "results": { "status": "400" } });
+    }
+    else{
+      res.json({ "results": { "status": "200" ,"data":results } });
+    }
+  });
+});
+
+app.get('/get_department_list', (req, res) => {
+  db.query('SELECT `DEPARTMENT_ID`, `DEPARTMENT_NAME`,(SELECT DEPARTMENT_TYPE.DEPARTMENT_TYPE_NAME FROM DEPARTMENT_TYPE WHERE DEPARTMENT_TYPE.DEPARTMENT_TYPE_ID = DEPARTMENT.DEPARTMENT_TYPE_ID) as DEPARTMENT_TYPE_NAME, `DEPARTMENT_PREFIX_USERNAME`, `DEPARTMENT_TYPE_ID`,(SELECT PROVINCE.PROVINCE_NAME_TH FROM PROVINCE WHERE PROVINCE.PROVINCE_ID = DEPARTMENT.PROVINCE_ID) as PROVINCE_NAME FROM `DEPARTMENT`', function (error, results, fields) {
+    res.json({ "results":{"data":results} });
+  });
+});
+
+
+/////////////////// insert_department_type /////////////////////////
+app.post('/insert_department', [
+
+  check('department_type.department_name').not().isEmpty(),
+  check('department_type.department_prefix').not().isEmpty(),
+  check('department_type.department_type').not().isEmpty(),
+  check('department_type.department_province').not().isEmpty()
+
+], (req, res) => {
+  // Finds the validation errors in this request and wraps them in an object with handy functions
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.json({"results":{"status":"401", errors: errors.array() }});
+  }
+  else{
+    let fetchdata_department_type = req.body.department_type;
+  // console.log(fetchdata_department_type);
+  
+  let temp_department = {
+    "DEPARTMENT_ID":fetchdata_department_type.department_id,
+    "DEPARTMENT_NAME":fetchdata_department_type.department_name,
+    "DEPARTMENT_PREFIX_USERNAME":fetchdata_department_type.department_prefix,
+    "DEPARTMENT_TYPE_ID":fetchdata_department_type.department_type,
+    "PROVINCE_ID":fetchdata_department_type.department_province
+  }
+
+  let temp_department_on = {
+    "DEPARTMENT_NAME":fetchdata_department_type.department_name,
+    "DEPARTMENT_PREFIX_USERNAME":fetchdata_department_type.department_prefix,
+    "DEPARTMENT_TYPE_ID":fetchdata_department_type.department_type,
+    "PROVINCE_ID":fetchdata_department_type.department_province
+
+  }
+
+
+  // db.query("INSERT INTO `DEPARTMENT` SET ? ON DUPLICATE KEY UPDATE ? ", [temp_department, temp_department_on], function (error, results, fields) {
+  //   if (error) {
+  //     // console.log(error);
+
+  //     res.json({ "results": { "status": "404" } });
+  //   }
+  //   else {
+  //     //console.log("EQUIPMENT");
+  //     res.json({ "results": { "status": "200" } });
+  //   }
+  // });
+  }
 });
