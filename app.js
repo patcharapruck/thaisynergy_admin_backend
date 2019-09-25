@@ -6,6 +6,16 @@ const path = require('path');
 const multer = require('multer');
 const { check, validationResult } = require('express-validator');
 const app = express();
+const db = require('./connect');
+const membersRoute = require('./api/routes/members');
+const usersRoute = require('./api/routes/users');
+app.use('/api/members',membersRoute);
+app.use('/api/users',usersRoute);
+
+
+app.use(bodyPaeser.json());
+app.use(bodyPaeser.urlencoded());
+
 
 
 const DIR = './uploads';
@@ -20,8 +30,7 @@ let storage = multer.diskStorage({
 });
 let upload = multer({ storage: storage });
 
-app.use(bodyPaeser.json());
-app.use(bodyPaeser.urlencoded());
+
 // app.use(validator());
 
 app.use(function (req, res, next) {
@@ -33,69 +42,41 @@ app.use(function (req, res, next) {
 });
 
 
-app.listen(3000, () => {
+app.listen(3000, (err) => {
   //console.log("server is running...");
 });
 
 app.use(express.static('uploads'))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// app.post('/api_check', [
 
-//   check('username').isEmail(),
-//   check('password').isLength({ min: 5 }),
 
-//   check('user_id').not().isEmpty(),
-//   check('member.informationMember.idcard').not().isEmpty().isLength({ min: 13, max: 13 }),
-//   check('member.informationMember.fname').not().isEmpty(),
-//   check('member.informationMember.lname').not().isEmpty(),
 
-// ], (req, res) => {
-//   // Finds the validation errors in this request and wraps them in an object with handy functions
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(422).json({ errors: errors.array() });
+
+// const db = mysql.createConnection({
+//   host: process.env.HOST,
+//   port: process.env.PORT,
+//   user: process.env.USER,
+//   password: process.env.PW,
+//   database: process.env.DB
+// });
+
+// db.connect((err) => {
+//   if (err) {
+//     console.log(err);
 //   }
-
-//   User.create({
-//     username: req.body.username,
-//     password: req.body.password
-//   }).then(user => res.json(user));
+//   else{
+//     console.log('Mysql Connected...');
+//   }
+  
 // });
-
-// app.post('/api', (req, res) => {
-//   const feedback = req.body.feedback;
-//   const username = req.body.username;
-//   //res.end("Received  Feedback : " + feedback + ", Username : " +username );
-//   res.json({ result: "success", Username: username, Feedback: feedback });
-// });
-
-
-
-const db = mysql.createConnection({
-  host: 'localhost',
-  port: 8889,
-  user: 'root',
-  password: 'root',
-  database: 'THAISYNERGY'
-});
-
-db.connect((err) => {
-  if (err) {
-    //console.log(err);
-  }
-  //console.log('Mysql Connected...');
-});
 
 
 app.post('/insert_user', async (req, res) => {
 
   let fetch_login = req.body.login;
   // let username = fetch_login.username;
-
   let password = fetch_login.password;
-
-
   let fetch_user = req.body.user;
   let department_id = fetch_user.department_id;
   let idcard = fetch_user.user_identification_number;
@@ -150,15 +131,15 @@ app.post('/user_login', async (req, res) => {
   let password = fetch_login.password;
 
 
-  db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as USER_ID FROM LOGIN,USER WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?) AND LOGIN.LOGIN_ID = USER.LOGIN_ID AND USER.USER_STATUS = 1", [username, username, password], function (error, results, fields) {
+  db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_id,(SELECT USER.USER_IMAGE FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_image FROM LOGIN,USER WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?) AND LOGIN.LOGIN_ID = USER.LOGIN_ID AND USER.USER_STATUS = 1", [username, username, password], function (error, results, fields) {
     if (error) {
       console.log(error);
       
       res.json({ "results": { "status": "404" } });
     }
     else {
-      if (results[0].count_user >= 1) {
-        res.json({ "results": { "status": "200", "data": { "user_id": results[0].USER_ID, "fullname": results[0].fullname } } });
+      if ( results[0].count_user > 0 ) {
+        res.json({ "results": { "status": "200", "data":  results[0]  } });
       }
       else {
         res.json({ "results": { "status": "204", "data": "Username Or Password Not found" } });
@@ -437,8 +418,10 @@ async function get_rights_information_caretaker(id) {
   });
 }
 
+
+
 /////////// insert member ///////////////
-app.post('/insert_member', upload.single('photo'), [
+app.post('/insert_member', [
 
   check('user_id').not().isEmpty(),
   check('member.informationMember.prefix').not().isEmpty(),
@@ -1392,7 +1375,7 @@ app.post('/update_member', (req, res) => {
   const permanent_address_village_number = permanentAddressMember.villageNumber;
   const permanent_address_lane = permanentAddressMember.alley;
   const permanent_address_street = permanentAddressMember.road;
-  const permanent_address_locality = permanentAddressMember.houseNumber;
+  const permanent_address_locality = permanentAddressMember.locality;
   const permanent_address_postal_code = permanentAddressMember.postCode;
   const permanent_subdistrict_id = permanentAddressMember.subDistrict;
   const permanent_address_status_id = 1;
@@ -1427,11 +1410,13 @@ app.post('/update_member', (req, res) => {
   const current_address_village_number = currentAddressMember.villageNumber;
   const current_address_lane = currentAddressMember.alley;
   const current_address_street = currentAddressMember.road;
-  const current_address_locality = currentAddressMember.houseNumber;
+  const current_address_locality = currentAddressMember.locality;
   const current_address_postal_code = currentAddressMember.postCode;
   const current_address_latitude = currentAddressMember.latitude;
   const current_address_longitude = currentAddressMember.longitude;
   const current_subdistrict_id = currentAddressMember.subDistrict;
+  // console.log(current_subdistrict_id);
+  
   const current_address_status_id = 2;
 
   let temp_cur_addr = {
@@ -1465,7 +1450,11 @@ app.post('/update_member', (req, res) => {
 
   /////////////// CONTACT ////////////////////
   const fetchData_contact = req.body[0].contact;
+  
+  
   const contactAddress = fetchData_contact.contactAddress;
+
+  
   const contact_address_house_number = contactAddress.houseNumber;
   const contact_address_village_number = contactAddress.villageNumber;
   const contact_address_lane = contactAddress.alley;
@@ -1473,7 +1462,7 @@ app.post('/update_member', (req, res) => {
   const contact_address_locality = contactAddress.locality;
   const contact_address_postal_code = contactAddress.postCode;
   const contact_subdistrict_id = contactAddress.subDistrict;
-
+  // console.log(contact_subdistrict_id);
 
   let temp_addr_contact = {
     "ADDRESS_HOUSE_NUMBER": contact_address_house_number,
@@ -2310,17 +2299,16 @@ app.post('/insert_department', [
 
   }
 
+  db.query("INSERT INTO `DEPARTMENT` SET ? ON DUPLICATE KEY UPDATE ? ", [temp_department, temp_department_on], function (error, results, fields) {
+    if (error) {
+      // console.log(error);
 
-  // db.query("INSERT INTO `DEPARTMENT` SET ? ON DUPLICATE KEY UPDATE ? ", [temp_department, temp_department_on], function (error, results, fields) {
-  //   if (error) {
-  //     // console.log(error);
-
-  //     res.json({ "results": { "status": "404" } });
-  //   }
-  //   else {
-  //     //console.log("EQUIPMENT");
-  //     res.json({ "results": { "status": "200" } });
-  //   }
-  // });
+      res.json({ "results": { "status": "404" } });
+    }
+    else {
+      //console.log("EQUIPMENT");
+      res.json({ "results": { "status": "200" } });
+    }
+  });
   }
 });
