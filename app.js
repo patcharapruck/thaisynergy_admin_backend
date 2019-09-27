@@ -7,14 +7,28 @@ const multer = require('multer');
 const { check, validationResult } = require('express-validator');
 const app = express();
 const db = require('./connect');
+
 const membersRoute = require('./api/routes/members');
 const usersRoute = require('./api/routes/users');
+const deaprtmentsRoute = require('./api/routes/departments');
+const generalData = require('./api/routes/generalData');
+const loginRoute = require('./api/routes/login');
+const residenceRoute = require('./api/routes/residence');
+const disabilityRoute = require('./api/routes/disability');
+
+app.use('/api/generaldata',generalData);
 app.use('/api/members',membersRoute);
 app.use('/api/users',usersRoute);
+app.use('/api/department',deaprtmentsRoute);
+app.use('/api/login',loginRoute);
+app.use('/api/residence',residenceRoute);
+app.use('/api/disability',disabilityRoute);
+
 
 
 app.use(bodyPaeser.json());
-app.use(bodyPaeser.urlencoded());
+app.use(bodyPaeser.urlencoded({ extended: true }));
+// app.use(bodyPaeser.urlencoded());
 
 
 
@@ -35,23 +49,21 @@ let upload = multer({ storage: storage });
 
 app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, x-access-token');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Response-Time, X-PINGOTHER, X-CSRF-Token,Authorization');
+  res.setHeader('Access-Control-Allow-Methods', '*');
+  res.setHeader('Access-Control-Expose-Headers', 'X-Api-Version, X-Request-Id, X-Response-Time');
+  res.setHeader('Access-Control-Max-Age', '1000');
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
 
 
 app.listen(3000, (err) => {
-  //console.log("server is running...");
+  console.log("server is running...");
 });
 
 app.use(express.static('uploads'))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
-
-
-
-
 
 // const db = mysql.createConnection({
 //   host: process.env.HOST,
@@ -72,82 +84,30 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 // });
 
 
-app.post('/insert_user', async (req, res) => {
+// app.post('/user_login', async (req, res) => {
 
-  let fetch_login = req.body.login;
-  // let username = fetch_login.username;
-  let password = fetch_login.password;
-  let fetch_user = req.body.user;
-  let department_id = fetch_user.department_id;
-  let idcard = fetch_user.user_identification_number;
-  let user_first_name = fetch_user.user_first_name;
-  let user_last_name = fetch_user.user_last_name;
-  let user_image = fetch_user.user_image;
-  let user_email = fetch_user.user_email;
-  let user_line_id = fetch_user.user_line_id;
-  let user_facebook_id = fetch_user.user_facebook_id;
-  let name_title_id = fetch_user.name_title_id;
-  let subdistrict_id = fetch_user.subdistrict_id;
-  // let department_id = fetch_user.department_id;
-  let user_type_id = fetch_user.user_type_id;
-
-  db.query("INSERT INTO `LOGIN`(`LOGIN_USERNAME`, `LOGIN_PASSWORD`) VALUES ((SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5)))),ENCODE(((SELECT CONCAT((SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5))))),?))", [department_id, department_id, department_id, department_id, password], function (error, results, fields) {
-    if (error) {
-      console.log(error);
-
-      res.json({ "results": { "status": "400" } });
-    }
-  });
+//   let fetch_login = req.body.login;
+//   let username = fetch_login.username;
+//   let password = fetch_login.password;
 
 
-  db.query("INSERT INTO `USER`(`USER_ID`,`USER_IDENTIFICATION_NUMBER`, `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_IMAGE`, `USER_EMAIL`, `USER_LINE_ID`, `USER_FACEBOOK_ID`, `NAME_TITLE_ID`, `SUBDISTRICT_ID`, `DEPARTMENT_ID`, `LOGIN_ID`, `USER_TYPE_ID` ,`USER_STATUS`) VALUES (UNIX_TIMESTAMP()*1000,?,?,?,?,?,?,?,?,?,?,LAST_INSERT_ID(),?,1)", [idcard, user_first_name, user_last_name, user_image, user_email, user_line_id, user_facebook_id, name_title_id, subdistrict_id, department_id, user_type_id], function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      // res.json({ "results": { "status": "200","data":{"username":username,"password":password} } });
-    }
-  });
-
-
-  db.query("SELECT LOGIN.LOGIN_USERNAME FROM `LOGIN` WHERE LOGIN.LOGIN_ID = LAST_INSERT_ID()", function (error, results, fields) {
-    if (error) {
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      res.json({ "results": { "status": "200", "data": { "username": results[0].LOGIN_USERNAME, "password": password } } });
-    }
-  });
-
-
-});
-
-
-app.post('/user_login', async (req, res) => {
-
-  let fetch_login = req.body.login;
-  let username = fetch_login.username;
-  let password = fetch_login.password;
-
-
-  db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_id,(SELECT USER.USER_IMAGE FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_image FROM LOGIN,USER WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?) AND LOGIN.LOGIN_ID = USER.LOGIN_ID AND USER.USER_STATUS = 1", [username, username, password], function (error, results, fields) {
-    if (error) {
-      console.log(error);
+//   db.query("SELECT LOGIN.LOGIN_ID,COUNT(LOGIN.LOGIN_ID) as count_user,(SELECT CONCAT(USER.USER_FIRST_NAME,' ',USER.USER_LAST_NAME) as fullname FROM `USER` WHERE USER.LOGIN_ID = LOGIN.LOGIN_ID ) as fullname,(SELECT USER.USER_ID FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_id,(SELECT USER.USER_IMAGE FROM USER WHERE USER.LOGIN_ID=LOGIN.LOGIN_ID) as user_image FROM LOGIN,USER WHERE LOGIN.LOGIN_USERNAME = ? AND LOGIN.LOGIN_PASSWORD = ENCODE(?,?) AND LOGIN.LOGIN_ID = USER.LOGIN_ID AND USER.USER_STATUS = 1", [username, username, password], function (error, results, fields) {
+//     if (error) {
+//       console.log(error);
       
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      if ( results[0].count_user > 0 ) {
-        res.json({ "results": { "status": "200", "data":  results[0]  } });
-      }
-      else {
-        res.json({ "results": { "status": "204", "data": "Username Or Password Not found" } });
-      }
+//       res.json({ "results": { "status": "404" } });
+//     }
+//     else {
+//       if ( results[0].count_user > 0 ) {
+//         res.json({ "results": { "status": "200", "data":  results[0]  } });
+//       }
+//       else {
+//         res.json({ "results": { "status": "204", "data": "Username Or Password Not found" } });
+//       }
 
-    }
-  });
-});
+//     }
+//   });
+// });
 
 
 
@@ -369,7 +329,7 @@ async function get_data_addr_ice_contact(id) {
 
 
 
-///////////// GET RIGHT INFOMATION///////////////
+/////////// GET RIGHT INFOMATION///////////////
 app.post('/get_rights_information', async (req, res) => {
   // console.log(req.body.member_id);
 
@@ -1530,7 +1490,7 @@ app.post('/update_member', (req, res) => {
 });
 
 
-///////////////// insert_residence ///////////////
+/////////////// insert_residence ///////////////
 app.post('/insert_residence', (req, res) => {
   let fetch_data_residence = req.body.residence
   let temp_residence = {
@@ -1554,7 +1514,7 @@ app.post('/insert_residence', (req, res) => {
   });
 });
 
-//////////////get_residence///////////////////
+////////////get_residence///////////////////
 app.get('/get_residence', (req, res) => {
   db.query('SELECT * FROM `RESIDENCE`', function (error, results, fields) {
 
@@ -1584,7 +1544,7 @@ app.post('/get_has_residence', (req, res) => {
 });
 
 
-////////////////// update_disability ////////////////////////////
+//////////////// update_disability ////////////////////////////
 app.post('/insert_disability', (req, res) => {
   let fetch_data_has_disability = req.body.disability;
   let member_id = req.body.member_id;
@@ -1643,7 +1603,7 @@ app.post('/insert_disability', (req, res) => {
 
 });
 
-//////////////get_disability///////////////////
+////////////get_disability///////////////////
 app.post('/get_has_disability', (req, res) => {
   let member_id = req.body.member_id;
   db.query('SELECT DISABILITY.DISABILITY_TYPE_ID,MEMBER_HAS_DISABILITY.* FROM MEMBER_HAS_DISABILITY,DISABILITY WHERE MEMBER_HAS_DISABILITY.DISABILITY_ID = DISABILITY.DISABILITY_ID AND MEMBER_HAS_DISABILITY.MEMBER_ID = ? ', member_id, function (error, results, fields) {
@@ -1785,7 +1745,7 @@ async function insert_health_screening(id) {
 
 
 
-//////////////INSERT ADL EVALUATION ///////////////////
+////////////INSERT ADL EVALUATION ///////////////////
 app.post('/insert_adl_evaluation', async (req, res) => {
 
 
@@ -2170,145 +2130,4 @@ app.post('/check_idcard', async (req, res) => {
   // }
 
   
-});
-
-////////////// USER /////////////////////
-app.post('/check_department', async (req, res) => {
-  let department_id = req.body.department_id;
-
-  db.query("SELECT CONCAT( (SELECT DEPARTMENT.DEPARTMENT_PREFIX_USERNAME FROM DEPARTMENT WHERE DEPARTMENT.DEPARTMENT_ID = ?),(SELECT SUBSTRING((SELECT COUNT(USER.USER_ID)+1001 as num FROM `USER` WHERE USER.DEPARTMENT_ID = ?), 2, 5))) as USERNAME", [department_id, department_id], function (error, results, fields) {
-    if (error) {
-      console.log(error);
-
-      res.json({ "results": { "status": "400" } });
-    }
-    else{
-      res.json({ "results": { "status": "200","data":{"USERNAME":results[0].USERNAME} } });
-    }
-  });
-});
-
-
-app.get('/get_department_option', (req, res) => {
-  db.query('SELECT CONCAT((SELECT DEPARTMENT_TYPE.DEPARTMENT_TYPE_NAME FROM DEPARTMENT_TYPE WHERE DEPARTMENT_TYPE.DEPARTMENT_TYPE_ID = DEPARTMENT.DEPARTMENT_TYPE_ID),"(",`DEPARTMENT`.`DEPARTMENT_NAME`,")") as DEPARTMENT_NAME , DEPARTMENT.DEPARTMENT_ID FROM `DEPARTMENT`', function (error, results, fields) {
-    res.json({ results });
-  });
-});
-
-
-app.post('/update_user', async (req, res) => {
-  let login_id = req.body.login_id;
-  let user = req.body.user;
-  let temp_data = {
-    "USER_IDENTIFICATION_NUMBER":user.user_identification_number,
-    "USER_FIRST_NAME":user.user_first_name,
-    "USER_LAST_NAME":user.user_last_name,
-    "USER_IMAGE":user.user_image,
-    "USER_EMAIL":user.user_email,
-    "USER_LINE_ID":user.user_line_id,
-    "USER_FACEBOOK_ID":user.user_facebook_id,
-    "NAME_TITLE_ID":user.name_title_id,
-    "SUBDISTRICT_ID":user.subdistrict_id,
-    "DEPARTMENT_ID":user.department_id
-  }
-
-  db.query("UPDATE `USER` SET ? WHERE `USER`.`LOGIN_ID` = ? ", [temp_data, login_id], function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "400" } });
-    }
-    else{
-      res.json({ "results": { "status": "200" } });
-    }
-  });
-});
-
-
-app.post('/check_user_email', async (req, res) => {
-  let user_email = req.body.user_email;
-  db.query("SELECT IF(COUNT(USER.USER_ID)>=1,false,true) as email_status FROM `USER` WHERE `USER`.`USER_EMAIL` = ? ",user_email, function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "400" } });
-    }
-    else{
-      res.json({ "results": { "status": "200" ,"data":results[0].email_status } });
-    }
-  });
-});
-
-
-
-app.post('/get_user_list', async (req, res) => {
-  let user_type = req.body.user_type;
-  let data_temp = "SELECT * FROM `USER` ";
-  if (user_type==2) {
-    data_temp += "WHERE USER.USER_TYPE_ID = 2";
-  }
-  console.log(data_temp);
-  
-  db.query(data_temp, function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      res.json({ "results": { "status": "400" } });
-    }
-    else{
-      res.json({ "results": { "status": "200" ,"data":results } });
-    }
-  });
-});
-
-app.get('/get_department_list', (req, res) => {
-  db.query('SELECT `DEPARTMENT_ID`, `DEPARTMENT_NAME`,(SELECT DEPARTMENT_TYPE.DEPARTMENT_TYPE_NAME FROM DEPARTMENT_TYPE WHERE DEPARTMENT_TYPE.DEPARTMENT_TYPE_ID = DEPARTMENT.DEPARTMENT_TYPE_ID) as DEPARTMENT_TYPE_NAME, `DEPARTMENT_PREFIX_USERNAME`, `DEPARTMENT_TYPE_ID`,(SELECT PROVINCE.PROVINCE_NAME_TH FROM PROVINCE WHERE PROVINCE.PROVINCE_ID = DEPARTMENT.PROVINCE_ID) as PROVINCE_NAME FROM `DEPARTMENT`', function (error, results, fields) {
-    res.json({ "results":{"data":results} });
-  });
-});
-
-
-/////////////////// insert_department_type /////////////////////////
-app.post('/insert_department', [
-
-  check('department_type.department_name').not().isEmpty(),
-  check('department_type.department_prefix').not().isEmpty(),
-  check('department_type.department_type').not().isEmpty(),
-  check('department_type.department_province').not().isEmpty()
-
-], (req, res) => {
-  // Finds the validation errors in this request and wraps them in an object with handy functions
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.json({"results":{"status":"401", errors: errors.array() }});
-  }
-  else{
-    let fetchdata_department_type = req.body.department_type;
-  // console.log(fetchdata_department_type);
-  
-  let temp_department = {
-    "DEPARTMENT_ID":fetchdata_department_type.department_id,
-    "DEPARTMENT_NAME":fetchdata_department_type.department_name,
-    "DEPARTMENT_PREFIX_USERNAME":fetchdata_department_type.department_prefix,
-    "DEPARTMENT_TYPE_ID":fetchdata_department_type.department_type,
-    "PROVINCE_ID":fetchdata_department_type.department_province
-  }
-
-  let temp_department_on = {
-    "DEPARTMENT_NAME":fetchdata_department_type.department_name,
-    "DEPARTMENT_PREFIX_USERNAME":fetchdata_department_type.department_prefix,
-    "DEPARTMENT_TYPE_ID":fetchdata_department_type.department_type,
-    "PROVINCE_ID":fetchdata_department_type.department_province
-
-  }
-
-  db.query("INSERT INTO `DEPARTMENT` SET ? ON DUPLICATE KEY UPDATE ? ", [temp_department, temp_department_on], function (error, results, fields) {
-    if (error) {
-      // console.log(error);
-
-      res.json({ "results": { "status": "404" } });
-    }
-    else {
-      //console.log("EQUIPMENT");
-      res.json({ "results": { "status": "200" } });
-    }
-  });
-  }
 });

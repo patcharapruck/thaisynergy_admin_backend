@@ -4,85 +4,118 @@ const router = express.Router();
 const db = require('../../connect');
 
 router.use(bodyPaeser.json());
-router.use(bodyPaeser.urlencoded());
+router.use(bodyPaeser.urlencoded({ extended: true }));
 
-router.use(function (req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type, x-access-token');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
 
 
 var modelMembers = require('../models/modelMembers');
 
-router.route('/').get(function (req, res) {
-    console.log("GET");
-    res.json({ "results": { "status": "GET" } });
-    
-  })
-  .post(async function (req, res) {
-    
-    console.log("post");
-    res.json({ "results": { "status": "post" } });
-    
-  })
-  .put(function (req, res) {
-    console.log("put");
-    res.json({ "results": { "status": "put" } });
-    
-  })
-  .delete(function (req, res) {
-    console.log("delete");
-    res.json({ "results": { "status": "delete" } });
-    
-  })
-
-  router.route('/get_member_all')
-  .get(function (req, res) {
-    modelMembers.getAllMember(function(err, results) {
-      if (err)
-        res.send(err);
-      res.json({ "results": { "status": 200, "data": results } });      
-    });
-    
-  })
-  .post( async function (req, res) {
-    modelMembers.getMemberById(req.body.member_id,function(err, results) {
-      if (err)
-        res.send(err);
-      res.json({ "results": { "status": 200, "data": results } });      
-    });
-  })
-  
-
-
-// router.get('/get_member_all', (req, res) => {
-//     // console.log("asdasdasdasd");
-//     modelMembers.getAllMember(function(err, results) {
-//       if (err)
-//         res.send(err);
-       
-//       res.json({ "results": { "status": 200, "data": results } });
-
-      
-//     });
-  
-//     // db.query('SELECT MEMBER.MEMBER_ID,CONVERT(MEMBER.MEMBER_IDENTIFICATION_NUMBER,char(255)) AS ID_CARD,CONCAT((SELECT NAME_TITLE.NAME_TITLE_NAME FROM NAME_TITLE WHERE NAME_TITLE.NAME_TITLE_ID = MEMBER.NAME_TITLE_ID),MEMBER.MEMBER_FIRST_NAME," ",MEMBER.MEMBER_LAST_NAME) AS NAME_MEMBER,  DATE_FORMAT(MEMBER.MEMBER_BIRTH_DATE, "%d/%m/%Y") AS MEMBER_BIRTH_DATE FROM MEMBER', function (error, results, fields) {
-//     //   // console.log(results);
-  
-//     //   res.json({ "results": { "status": 200, "data": results } });
-//     // });
-//   });
-
-
-router.get('/get_member_status', (req, res) => {
-    db.query('SELECT * FROM `MEMBER_STATUS`', function (error, results, fields) {
-      //console.log(results);
-  
-      res.json({ results });
-    });
+router.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Response-Time, X-PINGOTHER, X-CSRF-Token,Authorization');
+  res.setHeader('Access-Control-Allow-Methods', '*');
+  res.setHeader('Access-Control-Expose-Headers', 'X-Api-Version, X-Request-Id, X-Response-Time');
+  res.setHeader('Access-Control-Max-Age', '1000');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
 });
 
-  module.exports = router;
+router.route('/').get(function (req, res) {
+  console.log("GET");
+  res.json({ "results": { "status": "GET" } });
+
+})
+  .post(async function (req, res) {
+    modelMembers.createMember(req.body, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+  .put(function (req, res) {
+    modelMembers.updateMember(req.body, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+  .delete(function (req, res) {
+    modelMembers.removeMember(req.body.member_id, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+  })
+
+router.route('/list')
+  .get(function (req, res) {
+    modelMembers.getAllMember(function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+  .post(async function (req, res) {
+    modelMembers.getMemberById(req.body.member_id, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+  })
+
+router.route('/info')
+  .post(async function (req, res) {
+    modelMembers.getMemberInfoById(req.body.member_id, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+  })
+
+router.route('/lists/user_id')
+  .post(async function (req, res) {
+    // console.log(req.body);
+    
+    modelMembers.getMemberByUserId(req.body.user_id, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+  })
+
+
+router.route('/rightInformation')
+  .post(function (req, res) {
+    modelMembers.createRightInfomation(req.body, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+
+
+router.route('/getrightInformation')
+  .post(function (req, res) {
+    modelMembers.getRightInfomation(req.body.member_id, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+
+  router.route('/checkidcard')
+  .post(function (req, res) {
+    modelMembers.checkIdCard(req.body.idcard, function (err, results) {
+      if (err)
+        res.send(err);
+      res.json({ "results": results });
+    });
+
+  })
+
+module.exports = router;

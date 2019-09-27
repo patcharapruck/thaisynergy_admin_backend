@@ -1,13 +1,12 @@
 const express = require('express');
 const bodyPaeser = require('body-parser');
 const router = express.Router();
-const db = require('../../connect');
 
 router.use(bodyPaeser.json());
 router.use(bodyPaeser.urlencoded({ extended: true }));
 
 
-var modelUsers = require('../models/modelUsers');
+var modelResidence = require('../models/modelResidences');
 
 router.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,37 +16,30 @@ router.use(function (req, res, next) {
     res.setHeader('Access-Control-Max-Age', '1000');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
-  });
+});
+
 
 router.route('/')
     .post(async function (req, res) {
-        modelUsers.createUser(req.body, function (err, results) {
-            if (err)
-                res.send(err);
-            res.json({ "results": results });
-        });
-
-    })
-    // .put(async function (req, res) {
-    //     modelUsers.createUser(req.body, function (err, results) {
-    //         if (err)
-    //             res.send(err);
-    //         res.json({ "results": results });
-    //     });
-
-    // })
-router.route('/checkUserEmail')
-    .post(async function (req, res) {
-        modelUsers.checkUserEmail(req.body, function (err, results) {
+        modelResidence.createResidence(req.body.residence,function (err, results) {
             if (err)
                 res.send(err);
             res.json({ "results": results });
         });
     })
 
-    router.route('/list')
+    router.route('/hasResidence')
     .post(async function (req, res) {
-        modelUsers.userList(req.body, function (err, results) {
+        modelResidence.getHasResidence(req.body.member_id,function (err, results) {
+            if (err)
+                res.send(err);
+            res.json({ "results": results });
+        });
+    })
+
+router.route('/option')
+    .get(async function (req, res) {
+        modelResidence.getResidenceOptions(function (err, results) {
             if (err)
                 res.send(err);
             res.json({ "results": results });

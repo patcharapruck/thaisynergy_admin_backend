@@ -7,7 +7,7 @@ router.use(bodyPaeser.json());
 router.use(bodyPaeser.urlencoded({ extended: true }));
 
 
-var modelUsers = require('../models/modelUsers');
+var modelLogin = require('../models/modelLogin');
 
 router.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,37 +21,23 @@ router.use(function (req, res, next) {
 
 router.route('/')
     .post(async function (req, res) {
-        modelUsers.createUser(req.body, function (err, results) {
+        console.log(req);
+        
+        modelLogin.checkLogin(req.body, function (err, results) {
             if (err)
                 res.send(err);
             res.json({ "results": results });
         });
 
     })
-    // .put(async function (req, res) {
-    //     modelUsers.createUser(req.body, function (err, results) {
-    //         if (err)
-    //             res.send(err);
-    //         res.json({ "results": results });
-    //     });
-
-    // })
-router.route('/checkUserEmail')
+    router.route('/token/')
     .post(async function (req, res) {
-        modelUsers.checkUserEmail(req.body, function (err, results) {
+        modelLogin.checkToken(req.body, function (err, results) {
             if (err)
                 res.send(err);
             res.json({ "results": results });
         });
-    })
 
-    router.route('/list')
-    .post(async function (req, res) {
-        modelUsers.userList(req.body, function (err, results) {
-            if (err)
-                res.send(err);
-            res.json({ "results": results });
-        });
     })
 
 module.exports = router;
