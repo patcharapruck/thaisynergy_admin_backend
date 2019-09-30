@@ -8,7 +8,7 @@ var member = function (task) {
 };
 
 member.checkIdCard = async function (idcard, result) {
-  
+
   db.query('SELECT IF(COUNT(MEMBER.MEMBER_ID)>=1,false,true) AS STATUS_IDCARD FROM MEMBER WHERE MEMBER.MEMBER_IDENTIFICATION_NUMBER = ?', idcard, function (error, results, fields) {
   
     if (error) {
@@ -77,15 +77,10 @@ async function get_data_addr_permanent(id) {
                 // return results[0];
                 if (error) {
                     // console.log(error);
-
                 }
-
                 else {
                     resolve(results[0]);
                 }
-
-
-
             });
         }, 250);
     });
@@ -97,9 +92,7 @@ async function get_data_addr_current(id) {
             db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)', id, function (error, results, fields) {
                 if (error) {
                     // console.log(error);
-
                 }
-
                 else {
                     resolve(results[0]);
                 }
@@ -115,7 +108,6 @@ async function get_data_ice_contact(id) {
             db.query('SELECT * FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?', id, function (error, results, fields) {
                 if (error) {
                     // console.log(error);
-
                 }
                 resolve(results[0]);
             });
@@ -130,9 +122,7 @@ async function get_data_addr_ice_contact(id) {
             db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT ICE_CONTACT.ADDRESS_ID FROM `ICE_CONTACT` WHERE ICE_CONTACT.MEMBER_ID = ?)', id, function (error, results, fields) {
                 if (error) {
                     // console.log(error);
-
                 }
-
                 else {
                     resolve(results[0]);
                 }

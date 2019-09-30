@@ -262,14 +262,10 @@ async function get_data_addr_permanent(id) {
         // return results[0];
         if (error) {
           // console.log(error);
-
         }
-
         else {
           resolve(results[0]);
         }
-
-
 
       });
     }, 250);
@@ -282,9 +278,7 @@ async function get_data_addr_current(id) {
       db.query('SELECT ADDRESS.*,(SELECT DISTRICT.DISTRICT_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as DISTRICT_ID,(SELECT DISTRICT.PROVINCE_ID FROM DISTRICT WHERE DISTRICT.DISTRICT_ID = (SELECT SUBDISTRICT.DISTRICT_ID FROM SUBDISTRICT WHERE SUBDISTRICT.SUBDISTRICT_ID = ADDRESS.SUBDISTRICT_ID)) as PROVINCE_ID FROM ADDRESS WHERE ADDRESS.ADDRESS_ID = (SELECT MEMBER.CURRENT_ADDRESS_ID FROM MEMBER WHERE MEMBER.MEMBER_ID = ?)', id, function (error, results, fields) {
         if (error) {
           // console.log(error);
-
         }
-
         else {
           resolve(results[0]);
         }
