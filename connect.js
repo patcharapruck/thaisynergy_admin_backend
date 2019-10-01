@@ -1,12 +1,13 @@
 var mysql = require('mysql');
+var config = require('./nodemon');
 
 //local mysql db connection
 var connection = mysql.createConnection({
-    host: process.env.HOST,
-    port: process.env.PORT,
-    user: process.env.USER,
-    password: process.env.PW,
-    database: process.env.DB
+    host: config.env.HOST,
+ //   port: config.env.PORT,
+    user: config.env.USER,
+    password: config.env.PW,
+    database: config.env.DB
 });
 
 connection.connect(function(err) {

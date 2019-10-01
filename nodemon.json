@@ -1,9 +1,9 @@
 {
     "env":{
         "HOST": "localhost",
-        "PORT": 8889,
+        "PORT": 81,
         "USER": "root",
-        "PW": "root",
+        "PW": "",
         "DB": "THAISYNERGY"
     }
     
